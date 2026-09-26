@@ -246,7 +246,7 @@ export default function DetailPage({ kind, entry }) {
       <header className="relative overflow-hidden pb-14 pt-28 sm:pb-20 sm:pt-36">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-[26rem] w-[26rem] rounded-full bg-white/[0.06] blur-[110px]"
+          className="glow pointer-events-none absolute -right-[11.5rem] -top-[11.5rem] h-[36rem] w-[36rem] [--glow-color:rgb(255_255_255/0.06)]"
         />
         <Container>
           <motion.div variants={stagger} initial="hidden" animate="show">

@@ -78,6 +78,17 @@
   mask-image: radial-gradient(ellipse 75% 55% at 50% 0%, #000 30%, transparent 100%);
 }
 
+/* Soft glow made from a radial gradient. It looks like a blurred blob but costs almost
+   nothing to paint (a real `filter: blur()` on a huge element is expensive, especially on phones). */
+@utility glow {
+  background: radial-gradient(
+    closest-side,
+    var(--glow-color) 0%,
+    color-mix(in srgb, var(--glow-color) 55%, transparent) 40%,
+    transparent 100%
+  );
+}
+
 /* Border that lights up under the pointer (set --x / --y from JS). */
 .spotlight {
   position: relative;
@@ -132,8 +143,17 @@
 
 .animate-bounce-soft { animation: bounce-soft 2s ease-in-out infinite; }
 .animate-float { animation: float 8s ease-in-out infinite; }
-.animate-drift-a { animation: drift-a 26s ease-in-out infinite; }
-.animate-drift-b { animation: drift-b 32s ease-in-out infinite; }
+.animate-drift-a { animation: drift-a 26s ease-in-out infinite; will-change: transform; }
+.animate-drift-b { animation: drift-b 32s ease-in-out infinite; will-change: transform; }
+
+/* Save battery and CPU on phones and tablets: the ambient motion stays on desktop only. */
+@media (max-width: 1023px) {
+  .animate-float { animation: none; }
+}
+@media (max-width: 639px) {
+  .animate-drift-a,
+  .animate-drift-b { animation: none; will-change: auto; }
+}
 .animate-status { animation: status-pulse 2.2s var(--ease-out-soft) infinite; }
 
 /* ---------- Reduced motion ---------- */

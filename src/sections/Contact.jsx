@@ -27,11 +27,11 @@ export default function Contact() {
         <div className="relative overflow-hidden rounded-[2rem] panel p-6 sm:p-10 lg:p-14">
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-whatsapp/[0.08] blur-[100px]"
+            className="glow pointer-events-none absolute -right-[9rem] -top-[9rem] h-[32rem] w-[32rem] [--glow-color:rgb(37_211_102/0.08)]"
           />
 
-          <div className="relative grid gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
-            <div className="flex flex-col">
+          <div className="relative grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14">
+            <div className="flex min-w-0 flex-col">
               <h2
                 id="contact-title"
                 className="text-[2.25rem] font-semibold leading-[1.02] tracking-[-0.035em] text-bone text-balance sm:text-6xl"
@@ -53,7 +53,7 @@ export default function Contact() {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               <motion.a
                 href={whatsappLink}
                 target="_blank"
@@ -85,7 +85,7 @@ export default function Contact() {
                   <p className="text-sm text-ash">Email</p>
                   <a
                     href={emailLink}
-                    className="block truncate text-[0.95rem] text-bone underline-offset-4 hover:underline sm:text-base"
+                    className="block break-all text-[0.95rem] text-bone underline-offset-4 hover:underline sm:truncate sm:break-normal sm:text-base"
                   >
                     {personalInfo.email}
                   </a>

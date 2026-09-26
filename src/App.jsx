@@ -1,4 +1,4 @@
-﻿import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import { MotionConfig, motion } from "framer-motion";
 import Background from "./components/Background.jsx";
@@ -7,9 +7,13 @@ import Footer from "./components/Footer.jsx";
 import FloatingWhatsApp from "./components/FloatingWhatsApp.jsx";
 import PortfolioAssistant from "./components/PortfolioAssistant.jsx";
 import Home from "./pages/Home.jsx";
-import SkillPage from "./pages/SkillPage.jsx";
-import ExperiencePage from "./pages/ExperiencePage.jsx";
-import NotFound from "./pages/NotFound.jsx";
+
+// The home page loads with the app; the detail pages are separate files fetched only when visited.
+const loadDetailPages = () =>
+  Promise.all([import("./pages/SkillPage.jsx"), import("./pages/ExperiencePage.jsx"), import("./pages/HomeSections.jsx")]);
+const SkillPage = lazy(() => import("./pages/SkillPage.jsx"));
+const ExperiencePage = lazy(() => import("./pages/ExperiencePage.jsx"));
+const NotFound = lazy(() => import("./pages/NotFound.jsx"));
 
 /** Scrolls to the top on page changes, or to the #section when the address has one. */
 function ScrollManager() {
@@ -26,7 +30,7 @@ function ScrollManager() {
     const scroll = () => {
       const el = document.getElementById(id);
       if (el) el.scrollIntoView({ block: "start", behavior: "instant" });
-      else if (tries++ < 15) timer = setTimeout(scroll, 60);
+      else if (tries++ < 50) timer = setTimeout(scroll, 60);
     };
     timer = setTimeout(scroll, 40);
     return () => clearTimeout(timer);
@@ -38,6 +42,23 @@ function ScrollManager() {
 /** Soft fade + rise every time the page changes. */
 function AnimatedRoutes() {
   const location = useLocation();
+
+  // Once the home page has finished loading, quietly fetch the detail pages during idle time
+  // so opening one feels instant.
+  useEffect(() => {
+    const idle = window.requestIdleCallback || ((cb) => setTimeout(cb, 2500));
+    const cancel = window.cancelIdleCallback || clearTimeout;
+    let handle;
+    const start = () => {
+      handle = idle(loadDetailPages, { timeout: 5000 });
+    };
+    if (document.readyState === "complete") start();
+    else window.addEventListener("load", start, { once: true });
+    return () => {
+      window.removeEventListener("load", start);
+      if (handle) cancel(handle);
+    };
+  }, []);
   return (
     <motion.div
       key={location.pathname}
@@ -45,12 +66,14 @@ function AnimatedRoutes() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
-      <Routes location={location}>
-        <Route path="/" element={<Home />} />
-        <Route path="/skills/:slug" element={<SkillPage />} />
-        <Route path="/experience/:slug" element={<ExperiencePage />} />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <Suspense fallback={<div className="min-h-[100svh]" aria-hidden="true" />}>
+        <Routes location={location}>
+          <Route path="/" element={<Home />} />
+          <Route path="/skills/:slug" element={<SkillPage />} />
+          <Route path="/experience/:slug" element={<ExperiencePage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
     </motion.div>
   );
 }

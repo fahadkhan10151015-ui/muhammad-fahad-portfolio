@@ -30,7 +30,7 @@ function HeroPanel() {
     >
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-white/[0.06] blur-[70px]"
+        className="glow pointer-events-none absolute -right-[9rem] -top-[9rem] h-[22rem] w-[22rem] [--glow-color:rgb(255_255_255/0.06)]"
       />
 
       <div className="relative">
