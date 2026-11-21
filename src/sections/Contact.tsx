@@ -24,12 +24,27 @@ type Errors = Partial<Record<Field, string>>;
 const EMPTY: Values = { name: "", email: "", website: "", subject: "", message: "", honey: "" };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const URL_RE = /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/\S*)?$/i;
+/** Finds website addresses typed anywhere in free text (subject / message). */
+const URL_IN_TEXT = /(?<![@\w.-])((?:https?:\/\/|www\.)[^\s,;)]+|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:com|net|org|pk|co|io|app|dev|uk|my|ae|us|ca|au|in|store|shop|online|site|info|biz|tech|ai|me)(?:\.[a-z]{2})?(?:\/[^\s,;)]*)?)/gi;
+
+function findWebsites(...texts: string[]): string[] {
+  const found = texts.flatMap((t) => t.match(URL_IN_TEXT) ?? []).map((u) => u.replace(/[.!?]+$/, ""));
+  const seen = new Set<string>();
+  return found.filter((u) => {
+    if (u.includes("@")) return false;
+    const key = u.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/$/, "");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
 
 function validate(v: Values, mode: Mode): Errors {
   const e: Errors = {};
   if (v.name.trim().length < 2) e.name = "Please enter your name.";
   if (!EMAIL_RE.test(v.email.trim())) e.email = "Please enter a valid email address.";
   if (mode === "audit" && !URL_RE.test(v.website.trim())) e.website = "Please enter your website address (e.g. example.com).";
+  if (mode === "project" && v.website.trim() && !URL_RE.test(v.website.trim())) e.website = "Please check the website address (e.g. example.com).";
   if (mode === "project" && v.subject.trim().length < 3) e.subject = "Please add a short subject.";
   if (mode === "project" && v.message.trim().length < 10) e.message = "Your message should be at least 10 characters.";
   return e;
@@ -86,13 +101,14 @@ export default function Contact({ ready }: { ready: boolean }) {
   };
 
   const subjectLine = () => (mode === "audit" ? `${AUDIT_SUBJECT}: ${values.website.trim()}` : values.subject.trim());
+  const websites = () => findWebsites(values.website, values.subject, values.message);
   const bodyText = () =>
     [
       mode === "audit" ? "Hi Fahad, I'd like a free SEO audit." : "Hi Fahad,",
       "",
       values.message.trim(),
       "",
-      values.website.trim() ? `Website: ${values.website.trim()}` : "",
+      ...websites().map((w) => `Website: ${w}`),
       `Name: ${values.name.trim()}`,
       `Email: ${values.email.trim()}`,
     ]
@@ -134,7 +150,7 @@ export default function Contact({ ready }: { ready: boolean }) {
           "Request type": mode === "audit" ? "Free SEO audit" : "Project enquiry",
           "Visitor name": values.name.trim(),
           "Visitor email": values.email.trim(),
-          ...(values.website.trim() ? { "Website to audit": values.website.trim() } : {}),
+          ...(websites().length ? { [mode === "audit" ? "Website to audit" : "Website(s)"]: websites().join("  ·  ") } : {}),
           message: bodyText(),
         }),
       });
@@ -265,9 +281,14 @@ export default function Contact({ ready }: { ready: boolean }) {
                 )}
                 {field("name", "Your Name", { autoComplete: "name", placeholder: "Your full name" })}
                 {field("email", "Your Email", { type: "email", autoComplete: "email", placeholder: "you@example.com" })}
-                {mode === "audit"
-                  ? field("website", "Your Website", { type: "url", autoComplete: "url", placeholder: "example.com" })
-                  : field("subject", "Subject", { placeholder: "Website, software, SEO…" })}
+                {mode === "audit" ? (
+                  field("website", "Your Website", { type: "url", autoComplete: "url", placeholder: "example.com" })
+                ) : (
+                  <>
+                    {field("subject", "Subject", { placeholder: "Website, software, SEO…" })}
+                    {field("website", "Your Website", { type: "url", autoComplete: "url", placeholder: "example.com", optional: true })}
+                  </>
+                )}
                 {field("message", mode === "audit" ? "Goals / keywords" : "Your Message", {
                   textarea: true,
                   optional: mode === "audit",
