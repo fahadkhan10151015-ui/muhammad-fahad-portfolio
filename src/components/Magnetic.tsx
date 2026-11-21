@@ -1,14 +1,16 @@
 "use client";
 import { useEffect, useRef, type ReactNode } from "react";
-import { gsap } from "@/lib/motion";
+import { useMotion } from "@/lib/use-motion";
 import { hasFinePointer, prefersReducedMotion } from "@/lib/env";
 
 /** Wrap a button/link to give it a subtle magnetic pull toward the cursor. */
 export default function Magnetic({ children, strength = 0.28, className = "" }: { children: ReactNode; strength?: number; className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
+  const m = useMotion();
   useEffect(() => {
     const el = ref.current;
-    if (!el || !hasFinePointer() || prefersReducedMotion()) return undefined;
+    if (!m || !el || !hasFinePointer() || prefersReducedMotion()) return undefined;
+    const { gsap } = m;
     const xTo = gsap.quickTo(el, "x", { duration: 0.6, ease: "power3.out" });
     const yTo = gsap.quickTo(el, "y", { duration: 0.6, ease: "power3.out" });
     const move = (e: PointerEvent) => {
@@ -26,7 +28,7 @@ export default function Magnetic({ children, strength = 0.28, className = "" }: 
       el.removeEventListener("pointermove", move);
       el.removeEventListener("pointerleave", leave);
     };
-  }, [strength]);
+  }, [strength, m]);
   return (
     <span ref={ref} className={`inline-flex will-change-transform ${className}`}>
       {children}

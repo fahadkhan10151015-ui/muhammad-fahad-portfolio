@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource-variable/manrope/wght.css";
-import "@fontsource/jetbrains-mono/latin-400.css";
 import "./globals.css";
 import { SITE_URL, GITHUB_URL, LINKEDIN_URL, personal } from "@/data/portfolio";
 
@@ -52,8 +51,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="preload" as="font" href="/fonts/sora-latin.woff2" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" as="font" href="/fonts/sora-latin.woff2" type="font/woff2" crossOrigin="anonymous" media="(min-width: 1024px)" />
         <link rel="preload" as="image" href="/logo.svg" type="image/svg+xml" />
+        <link rel="preload" as="image" href="/fallback/hero-mobile.webp" type="image/webp" media="(max-width: 1023px)" fetchPriority="high" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
       <body className="is-loading">{children}</body>

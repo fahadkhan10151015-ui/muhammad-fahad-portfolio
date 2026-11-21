@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { loading } from "@/lib/loading";
-import { gsap } from "@/lib/motion";
+import { loadMotion } from "@/lib/use-motion";
 import { prefersReducedMotion } from "@/lib/env";
 
 /**
@@ -27,14 +27,11 @@ export default function Loader({ onExitStart, onDone }: { onExitStart?: () => vo
     });
     const reduced = prefersReducedMotion();
 
-    // intro
-    const intro = gsap.timeline();
-    if (!reduced) {
-      intro
-        .from(logo.current, { scale: 0.7, autoAlpha: 0, filter: "blur(8px)", duration: 1, ease: "expo.out" })
-        .from("[data-l-fade]", { autoAlpha: 0, y: 12, stagger: 0.08, duration: 0.8 }, "-=0.6")
-        .from("[data-l-grid]", { scaleX: 0, stagger: 0.05, duration: 1.2, ease: "expo.inOut" }, 0);
-    }
+    // The loader is painted by the server HTML right away (no entrance animation needed);
+    // the animation library is fetched in the background for the exit sequence.
+    let intro: { kill: () => void } | undefined;
+    let alive = true;
+    void loadMotion();
 
     let raf = 0;
     let last = performance.now();
@@ -58,6 +55,11 @@ export default function Loader({ onExitStart, onDone }: { onExitStart?: () => vo
     raf = requestAnimationFrame(tick);
 
     function exit() {
+      loadMotion().then(({ gsap }) => alive && runExit(gsap));
+    }
+
+    function runExit(gsap: Awaited<ReturnType<typeof loadMotion>>["gsap"]) {
+      intro?.kill();
       onExitStart?.();
       const navLogo = document.getElementById("nav-logo");
       const tl = gsap.timeline({
@@ -96,9 +98,10 @@ export default function Loader({ onExitStart, onDone }: { onExitStart?: () => vo
     }
 
     return () => {
+      alive = false;
       unsub();
       cancelAnimationFrame(raf);
-      intro.kill();
+      intro?.kill();
     };
   }, []);
 
@@ -106,7 +109,7 @@ export default function Loader({ onExitStart, onDone }: { onExitStart?: () => vo
   return (
     <div
       ref={root}
-      className="fixed inset-0 z-[100] overflow-hidden"
+      className="fixed inset-0 z-[100] overflow-hidden max-lg:hidden"
       role="progressbar"
       aria-label="Loading portfolio"
       aria-valuemin={0}

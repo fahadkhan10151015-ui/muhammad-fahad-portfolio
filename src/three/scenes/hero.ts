@@ -356,10 +356,11 @@ export function buildHero({ quality, reduced }: SceneContext): SceneInstance {
       kbScale = 0.5;
       camTarget.set(0, 1.6, 0);
     } else if (aspect < 1.3) {
-      kbBase.set(0.6, -1.2, 2.2);
-      coreBase.set(3.0, 3.8, -1.2);
-      kbScale = 0.62;
-      camTarget.set(0.4, 1.2, 0);
+      // square-ish frames (also used to render the static mobile hero image)
+      kbBase.set(0.9, -1.1, 1.9);
+      coreBase.set(1.5, 2.55, -0.6);
+      kbScale = 0.56;
+      camTarget.set(1.0, 0.9, 0);
     } else {
       kbBase.set(3.4, -0.9, 1.4);
       coreBase.set(5.4, 2.6, -1.2);

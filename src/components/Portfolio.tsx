@@ -11,8 +11,8 @@ import Contact from "@/sections/Contact";
 import Footer from "@/sections/Footer";
 import { EngineContext } from "@/lib/engine-context";
 import { loading, startLoading } from "@/lib/loading";
-import { getQuality, prefersReducedMotion, hasHardwareWebGL } from "@/lib/env";
-import { ScrollTrigger } from "@/lib/motion";
+import { getQuality, prefersReducedMotion, hasHardwareWebGL, isCompactViewport, forced3D } from "@/lib/env";
+import { loadMotion } from "@/lib/use-motion";
 import { navLinks, type SectionId } from "@/data/portfolio";
 import type { Engine } from "@/three/types";
 
@@ -36,6 +36,7 @@ export default function Portfolio() {
   const [no3d, setNo3d] = useState(false);
   const [phase, setPhase] = useState<Phase>("loading");
   const [active, setActive] = useState<SectionId>("home");
+  const [compact, setCompact] = useState(false);
 
   useEffect(() => {
     // always start at the top so the hero entrance is seen
@@ -50,6 +51,13 @@ export default function Portfolio() {
       loading.done("scene");
       loading.done("frame");
     };
+    // Phones & tablets: content immediately (no loader), static 3D renders (no WebGL) — fast and smooth.
+    if (isCompactViewport() && !forced3D()) {
+      setCompact(true);
+      fallback();
+      setPhase("ready");
+      return;
+    }
     if (!canvas || !hasHardwareWebGL()) {
       fallback();
       return;
@@ -70,7 +78,7 @@ export default function Portfolio() {
   useEffect(() => {
     if (phase !== "ready") return;
     document.body.classList.remove("is-loading");
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+    loadMotion().then(({ ScrollTrigger }) => requestAnimationFrame(() => ScrollTrigger.refresh()));
   }, [phase]);
 
   useEffect(() => {
@@ -98,18 +106,18 @@ export default function Portfolio() {
         style={{ display: no3d ? "none" : "block" }}
       />
 
-      {!ready && <Loader onExitStart={() => setPhase("exiting")} onDone={() => setPhase("ready")} />}
+      {!ready && !compact && <Loader onExitStart={() => setPhase("exiting")} onDone={() => setPhase("ready")} />}
 
       <a href="#main" className="fixed left-4 top-4 z-[120] -translate-y-24 rounded-full bg-gold px-4 py-2 text-sm font-semibold text-ink focus:translate-y-0">
         Skip to content
       </a>
 
-      <Navbar active={active} ready={entering} />
+      <Navbar active={active} ready={entering} compact={compact} />
       <SideIndicator active={active} />
       <ScrollProgress />
 
       <main id="main" className="relative z-10">
-        <Hero entering={entering} ready={ready} no3d={no3d} />
+        <Hero entering={entering} ready={ready} no3d={no3d} compact={compact} />
         <About ready={ready} />
         <Skills ready={ready} />
         <Projects ready={ready} />

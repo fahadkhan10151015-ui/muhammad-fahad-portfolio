@@ -71,7 +71,7 @@ export function startLoading() {
   if (started) return;
   started = true;
 
-  const fonts = ['600 1em "Sora Variable"', '400 1em "Manrope Variable"', '400 1em "JetBrains Mono"'];
+  const fonts = ['600 1em "Sora Variable"', '400 1em "Manrope Variable"'];
   let loaded = 0;
   Promise.allSettled(
     fonts.map((f) =>

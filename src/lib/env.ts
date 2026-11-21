@@ -56,3 +56,12 @@ export function hasHardwareWebGL(): boolean {
     return false;
   }
 }
+
+/** Phones & tablets (< 1024 px): no loader, no live WebGL — static renders instead. */
+export function isCompactViewport(): boolean {
+  return isBrowser && window.matchMedia("(max-width: 1023px)").matches;
+}
+
+export function forced3D(): boolean {
+  return isBrowser && new URLSearchParams(window.location.search).has("3d");
+}

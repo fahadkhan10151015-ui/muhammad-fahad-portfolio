@@ -3,19 +3,23 @@ import { useEffect, useRef } from "react";
 import { about, services, currentSeo, personal, LINKEDIN_URL, whatsappLink, type Stat as StatData } from "@/data/portfolio";
 import { useSceneView } from "@/lib/engine-context";
 import { useReveal } from "@/lib/reveal";
-import { gsap } from "@/lib/motion";
+import { useMotion, type Motion } from "@/lib/use-motion";
 import { prefersReducedMotion } from "@/lib/env";
 import { requestAudit } from "@/lib/contact-events";
 import { SectionMarker } from "@/components/Chrome";
 import Icon, { type IconName } from "@/components/Icon";
 
-function Stat({ value, suffix, label, icon, ready, className = "" }: StatData & { ready: boolean; className?: string }) {
+function Stat({ value, suffix, label, icon, ready, motion, className = "" }: StatData & { ready: boolean; motion: Motion | null; className?: string }) {
   const num = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const el = num.current;
-    if (!ready || !el || prefersReducedMotion()) return undefined;
+    if (!motion || !ready || !el || prefersReducedMotion()) return undefined;
+    // already on screen: keep the final number (no flicker)
+    const box = el.getBoundingClientRect();
+    if (box.top < window.innerHeight && box.bottom > 0) return undefined;
+    const { gsap } = motion;
     el.textContent = "0";
-    let tween: gsap.core.Tween | undefined;
+    let tween: ReturnType<typeof gsap.to> | undefined;
     const io = new IntersectionObserver(
       ([en]) => {
         if (!en?.isIntersecting) return;
@@ -38,7 +42,7 @@ function Stat({ value, suffix, label, icon, ready, className = "" }: StatData & 
       tween?.kill();
       el.textContent = String(value);
     };
-  }, [ready, value]);
+  }, [ready, value, motion]);
   return (
     <div className={`group flex items-center gap-4 px-5 py-6 sm:px-7 lg:py-8 ${className}`}>
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gold/30 bg-gold/[0.06] text-gold transition-transform duration-500 group-hover:-translate-y-0.5">
@@ -68,6 +72,7 @@ export default function About({ ready }: { ready: boolean }) {
   const root = useRef<HTMLElement>(null);
   const view = useRef<HTMLDivElement>(null);
   useSceneView(view, "about");
+  const motion = useMotion();
   useReveal(root, ready);
 
   // border layout for the 2×2 (mobile) / 4×1 (desktop) stats grid
@@ -122,7 +127,7 @@ export default function About({ ready }: { ready: boolean }) {
         {/* statistics */}
         <div data-reveal="mask" className="panel gold-edge mt-14 grid grid-cols-2 lg:grid-cols-4">
           {about.stats.map((s, i) => (
-            <Stat key={s.label} {...s} ready={ready} className={`border-white/[0.07] ${statBorders[i]}`} />
+            <Stat key={s.label} {...s} ready={ready} motion={motion} className={`border-white/[0.07] ${statBorders[i]}`} />
           ))}
         </div>
 

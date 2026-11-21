@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent, type MouseEvent } from "react";
 import { projects, projectFilters, GITHUB_URL, type Project } from "@/data/portfolio";
 import { useReveal } from "@/lib/reveal";
-import { gsap } from "@/lib/motion";
+import { useMotion } from "@/lib/use-motion";
 import { prefillContact } from "@/lib/contact-events";
 import { prefersReducedMotion } from "@/lib/env";
 import { SectionMarker } from "@/components/Chrome";
@@ -76,7 +76,7 @@ function ProjectCard({ p, index, total, offset, layout, onSelect }: CardProps) {
       onClick={() => !center && onSelect(index)}
       className={`card-3d group absolute left-1/2 top-0 flex h-full flex-col overflow-hidden rounded-[22px] border bg-gradient-to-b from-[#141418] to-[#09090b] ${
         center
-          ? "border-gold/55 shadow-[0_30px_80px_-30px_rgba(230,176,74,0.45),0_0_0_1px_rgba(248,215,132,0.12)_inset]"
+          ? "border-gold/55 shadow-[0_30px_80px_-30px_rgba(230,176,74,0.45),0_0_0_1px_rgba(248,215,132,0.12)_inset] max-lg:shadow-none"
           : "cursor-pointer border-white/10"
       }`}
       style={{ width: layout.cardW, marginLeft: -layout.cardW / 2 }}
@@ -148,6 +148,7 @@ export default function Projects({ ready }: { ready: boolean }) {
   const [busy, setBusy] = useState(false);
   const [layout, setLayout] = useState<Layout>(() => getLayout(1280));
   const entering = useRef(false);
+  const m = useMotion();
   const firstRun = useRef(true);
   useReveal(root, ready);
 
@@ -170,6 +171,8 @@ export default function Projects({ ready }: { ready: boolean }) {
 
   // place cards on the curved path
   useLayoutEffect(() => {
+    if (!m) return;
+    const { gsap } = m;
     const cards = stage.current?.querySelectorAll<HTMLElement>("[data-card]") ?? [];
     const reduced = prefersReducedMotion();
     cards.forEach((el, i) => {
@@ -186,7 +189,7 @@ export default function Projects({ ready }: { ready: boolean }) {
     });
     entering.current = false;
     firstRun.current = false;
-  }, [active, n, layout, list]);
+  }, [active, n, layout, list, m]);
 
   // auto rotation
   const running = auto && !paused && inView && !busy && n > 1;
@@ -200,24 +203,30 @@ export default function Projects({ ready }: { ready: boolean }) {
   useLayoutEffect(() => {
     const btn = filterBar.current?.querySelector<HTMLElement>(`[data-filter="${filter}"]`);
     if (!btn || !pill.current) return;
-    gsap.to(pill.current, {
+    if (!m) {
+      pill.current.style.transform = `translateX(${btn.offsetLeft}px)`;
+      pill.current.style.width = `${btn.offsetWidth}px`;
+      return;
+    }
+    m.gsap.to(pill.current, {
       x: btn.offsetLeft,
       width: btn.offsetWidth,
       duration: prefersReducedMotion() ? 0 : 0.6,
       ease: "expo.out",
     });
-  }, [filter, layout]);
+  }, [filter, layout, m]);
 
   const go = useCallback((dir: number) => setActive((a) => (((a + dir) % n) + n) % n), [n]);
 
   const changeFilter = (id: FilterId) => {
     if (id === filter || busy) return;
     const cards = stage.current?.querySelectorAll<HTMLElement>("[data-card]") ?? [];
-    if (prefersReducedMotion()) {
+    if (!m || prefersReducedMotion()) {
       setFilter(id);
       setActive(0);
       return;
     }
+    const { gsap } = m;
     setBusy(true);
     gsap.to(cards, {
       z: -1500,
@@ -315,7 +324,7 @@ export default function Projects({ ready }: { ready: boolean }) {
         {/* platform */}
         <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-[-40px] h-[300px]">
           <div className="platform-ring bottom-[40px] h-[230px] w-[min(1240px,140vw)] border border-white/[0.05]" />
-          <div className="platform-ring bottom-[70px] h-[170px] w-[min(1020px,120vw)] border-[1.5px] border-gold/45 shadow-[0_0_40px_rgba(230,176,74,0.25),inset_0_0_40px_rgba(230,176,74,0.12)]" />
+          <div className="platform-ring bottom-[70px] h-[170px] w-[min(1020px,120vw)] border-[1.5px] border-gold/45 shadow-[0_0_40px_rgba(230,176,74,0.25),inset_0_0_40px_rgba(230,176,74,0.12)] max-lg:shadow-none" />
           <div className="platform-ring bottom-[95px] h-[120px] w-[min(760px,96vw)] border border-gold/20" />
           <div className="platform-ring bottom-[60px] h-[200px] w-[min(900px,110vw)] bg-[radial-gradient(closest-side,rgba(230,176,74,0.16),transparent)]" />
           <div className="absolute bottom-[150px] left-[6%] h-[3px] w-24 rounded-full bg-gold/70 blur-[1px] shadow-[0_0_14px_rgba(230,176,74,0.9)]" />

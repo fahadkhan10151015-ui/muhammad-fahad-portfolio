@@ -121,7 +121,7 @@ export function labelSprite(
 ): THREE.Sprite {
   const pad = 26;
   const fontPx = 46;
-  const font = `${mono ? "500" : "600"} ${fontPx}px ${mono ? '"JetBrains Mono", monospace' : '"Sora Variable", sans-serif'}`;
+  const font = `${mono ? "500" : "600"} ${fontPx}px ${mono ? 'ui-monospace, Menlo, Consolas, monospace' : '"Sora Variable", sans-serif'}`;
   const m = ctx2d(document.createElement("canvas"));
   m.font = font;
   const tw = Math.ceil(m.measureText(text).width);

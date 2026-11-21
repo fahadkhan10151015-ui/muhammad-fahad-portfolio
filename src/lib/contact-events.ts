@@ -1,6 +1,6 @@
 "use client";
 import { AUDIT_SUBJECT } from "@/data/portfolio";
-import { scrollToId } from "./motion";
+import { scrollToId } from "./scroll";
 
 export interface PrefillDetail {
   subject: string;

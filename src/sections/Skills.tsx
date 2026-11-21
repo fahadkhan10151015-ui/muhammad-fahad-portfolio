@@ -3,7 +3,7 @@ import { useLayoutEffect, useRef, useState } from "react";
 import { skillGroups, marquee } from "@/data/portfolio";
 import { useSceneView } from "@/lib/engine-context";
 import { useReveal } from "@/lib/reveal";
-import { gsap, ScrollTrigger } from "@/lib/motion";
+import { useMotion } from "@/lib/use-motion";
 import { prefersReducedMotion } from "@/lib/env";
 import { SectionMarker } from "@/components/Chrome";
 import Icon from "@/components/Icon";
@@ -15,11 +15,13 @@ export default function Skills({ ready }: { ready: boolean }) {
   const readout = useRef<HTMLSpanElement>(null);
   const [focus, setFocus] = useState(-1);
   const engine = useSceneView(view, "skills");
+  const m = useMotion();
   useReveal(root, ready);
 
   // Pin + scrub on desktop: scrolling assembles the technology network.
   useLayoutEffect(() => {
-    if (!ready || prefersReducedMotion()) return undefined;
+    if (!m || !ready || prefersReducedMotion()) return undefined;
+    const { gsap, ScrollTrigger } = m;
     const mm = gsap.matchMedia();
     mm.add("(min-width: 1024px) and (min-height: 700px)", () => {
       const st = ScrollTrigger.create({
@@ -43,7 +45,7 @@ export default function Skills({ ready }: { ready: boolean }) {
       };
     });
     return () => mm.revert();
-  }, [ready, engine]);
+  }, [ready, engine, m]);
 
   return (
     <section id="skills" ref={root} aria-labelledby="skills-title" className="relative">

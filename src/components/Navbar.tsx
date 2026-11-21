@@ -1,17 +1,19 @@
 "use client";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { navLinks, GITHUB_URL, LINKEDIN_URL, personal, AUDIT_SUBJECT, type SectionId } from "@/data/portfolio";
-import { scrollToId, gsap } from "@/lib/motion";
+import { scrollToId } from "@/lib/scroll";
+import { useMotion } from "@/lib/use-motion";
 import { prefersReducedMotion } from "@/lib/env";
 import { requestAudit } from "@/lib/contact-events";
 import Icon from "./Icon";
 
-export default function Navbar({ active, ready }: { active: SectionId; ready: boolean }) {
+export default function Navbar({ active, ready, compact = false }: { active: SectionId; ready: boolean; compact?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const list = useRef<HTMLUListElement>(null);
   const indicator = useRef<HTMLSpanElement>(null);
   const links = useRef<Partial<Record<SectionId, HTMLAnchorElement | null>>>({});
+  const m = useMotion();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 24);
@@ -26,18 +28,20 @@ export default function Navbar({ active, ready }: { active: SectionId; ready: bo
     if (!el || !indicator.current || !list.current) return;
     const parent = list.current.getBoundingClientRect();
     const r = el.getBoundingClientRect();
-    gsap.to(indicator.current, {
-      x: r.left - parent.left + r.width / 2 - 3,
-      autoAlpha: 1,
-      duration: prefersReducedMotion() ? 0 : 0.6,
-      ease: "expo.out",
-    });
-  }, [active, ready]);
+    const x = r.left - parent.left + r.width / 2 - 3;
+    if (m) {
+      m.gsap.to(indicator.current, { x, autoAlpha: 1, duration: prefersReducedMotion() ? 0 : 0.6, ease: "expo.out" });
+    } else {
+      indicator.current.style.transform = `translateX(${x}px)`;
+      indicator.current.style.opacity = "1";
+    }
+  }, [active, ready, m]);
 
   useEffect(() => {
-    if (!ready || prefersReducedMotion()) return;
-    gsap.from("[data-nav-item]", { y: -14, autoAlpha: 0, stagger: 0.05, duration: 0.8, ease: "expo.out", delay: 0.15 });
-  }, [ready]);
+    if (!m || !ready || compact || prefersReducedMotion()) return;
+    m.gsap.from("[data-nav-item]", { y: -14, autoAlpha: 0, stagger: 0.05, duration: 0.8, ease: "expo.out", delay: 0.15 });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- run the entrance once, when ready
+  }, [ready, compact, !!m]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -71,7 +75,7 @@ export default function Navbar({ active, ready }: { active: SectionId; ready: bo
             alt=""
             width={44}
             height={44}
-            className="h-10 w-10 transition-[transform,filter] duration-500 group-hover:scale-105 group-hover:brightness-110 sm:h-11 sm:w-11"
+            className="h-10 w-10 transition-[transform,filter] duration-500 group-hover:scale-105 group-hover:brightness-110 max-lg:!opacity-100 sm:h-11 sm:w-11"
             style={{ opacity: ready ? 1 : 0 }}
           />
         </a>

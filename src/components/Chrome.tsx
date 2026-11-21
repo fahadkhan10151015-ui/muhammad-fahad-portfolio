@@ -2,7 +2,7 @@
 /* Global UI chrome: scroll progress, section indicator, section markers. */
 import { useEffect, useRef } from "react";
 import { navLinks, type SectionId } from "@/data/portfolio";
-import { scrollToId } from "@/lib/motion";
+import { scrollToId } from "@/lib/scroll";
 
 export function ScrollProgress() {
   const bar = useRef<HTMLDivElement>(null);

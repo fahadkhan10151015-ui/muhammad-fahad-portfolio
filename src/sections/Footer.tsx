@@ -1,6 +1,6 @@
 "use client";
 import { personal, GITHUB_URL, LINKEDIN_URL, whatsappLink, navLinks } from "@/data/portfolio";
-import { scrollToId } from "@/lib/motion";
+import { scrollToId } from "@/lib/scroll";
 import { requestAudit } from "@/lib/contact-events";
 import Icon, { type IconName } from "@/components/Icon";
 

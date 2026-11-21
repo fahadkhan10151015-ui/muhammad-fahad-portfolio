@@ -3,14 +3,15 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { personal, GITHUB_URL, LINKEDIN_URL } from "@/data/portfolio";
 import { useSceneView } from "@/lib/engine-context";
 import { loading } from "@/lib/loading";
-import { gsap, ScrollTrigger, SplitText, scrollToId } from "@/lib/motion";
+import { scrollToId } from "@/lib/scroll";
+import { useMotion } from "@/lib/use-motion";
 import { prefersReducedMotion } from "@/lib/env";
 import { requestAudit } from "@/lib/contact-events";
 import type { SceneInstance } from "@/three/types";
 import Magnetic from "@/components/Magnetic";
 import Icon from "@/components/Icon";
 
-export default function Hero({ entering, ready, no3d }: { entering: boolean; ready: boolean; no3d: boolean }) {
+export default function Hero({ entering, ready, no3d, compact }: { entering: boolean; ready: boolean; no3d: boolean; compact: boolean }) {
   const root = useRef<HTMLElement>(null);
   const view = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -18,6 +19,7 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
   const enteringRef = useRef(entering);
   enteringRef.current = entering;
   const [live3d, setLive3d] = useState(false);
+  const m = useMotion();
 
   useSceneView(view, "hero", (i) => {
     inst.current = i;
@@ -42,8 +44,9 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
 
   // typography reveal, synced with the loader exit
   useLayoutEffect(() => {
-    if (!entering || prefersReducedMotion() || !root.current) return undefined;
-    let split: SplitText | undefined;
+    if (!m || !entering || compact || prefersReducedMotion() || !root.current) return undefined;
+    const { gsap, SplitText } = m;
+    let split: InstanceType<typeof SplitText> | undefined;
     const ctx = gsap.context(() => {
       split = SplitText.create("[data-hero-name]", { type: "chars,lines", mask: "lines" });
       gsap
@@ -58,11 +61,12 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
       ctx.revert();
       split?.revert();
     };
-  }, [entering]);
+  }, [entering, compact, m]);
 
   // content drifts up as the keyboard recedes
   useLayoutEffect(() => {
-    if (!ready || prefersReducedMotion() || !root.current) return undefined;
+    if (!m || !ready || compact || prefersReducedMotion() || !root.current) return undefined;
+    const { gsap, ScrollTrigger } = m;
     const ctx = gsap.context(() => {
       gsap.to(content.current, {
         yPercent: -14,
@@ -73,23 +77,31 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
     }, root);
     ScrollTrigger.refresh();
     return () => ctx.revert();
-  }, [ready]);
+  }, [ready, compact, m]);
 
   return (
-    <section id="home" ref={root} aria-label="Introduction" className="relative flex h-[100svh] min-h-[640px] items-center overflow-hidden">
-      <div ref={view} className="absolute inset-0" aria-hidden />
+    <section
+      id="home"
+      ref={root}
+      aria-label="Introduction"
+      className="relative flex flex-col overflow-hidden lg:h-[100svh] lg:min-h-[640px] lg:flex-row lg:items-center"
+    >
+      <div ref={view} className="absolute inset-0 max-lg:hidden" aria-hidden />
       {/* static render of the 3D scene: shown until WebGL is live, and permanently on devices without a GPU */}
-      <picture aria-hidden className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${live3d && !no3d ? "opacity-0" : "opacity-100"}`}>
-        <source media="(max-width: 767px)" srcSet="/fallback/hero-mobile.webp" />
+      <picture
+        aria-hidden
+        className={`pointer-events-none absolute inset-0 transition-opacity duration-700 max-lg:hidden ${live3d && !no3d ? "opacity-0" : "opacity-100"}`}
+      >
+        <source media="(max-width: 1023px)" srcSet="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
         <img src="/fallback/hero-desktop.webp" alt="" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-right" />
       </picture>
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,6,8,0.96)_0%,rgba(6,6,8,0.82)_34%,rgba(6,6,8,0.25)_58%,transparent_75%)] max-md:bg-[linear-gradient(180deg,rgba(6,6,8,0.3)_0%,rgba(6,6,8,0.78)_35%,rgba(6,6,8,0.78)_70%,rgba(6,6,8,0.3)_100%)]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,6,8,0.96)_0%,rgba(6,6,8,0.82)_34%,rgba(6,6,8,0.25)_58%,transparent_75%)] max-lg:hidden"
       />
-      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink to-transparent" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink to-transparent max-lg:hidden" />
 
-      <div ref={content} className="relative mx-auto w-full max-w-[1440px] px-5 pt-[var(--nav-h)] sm:px-8 lg:px-12 xl:pl-24">
+      <div ref={content} className="relative mx-auto w-full max-w-[1440px] px-5 pt-[calc(var(--nav-h)+2.5rem)] sm:px-8 lg:px-12 lg:pt-[var(--nav-h)] xl:pl-24">
         <div className="max-w-[720px]">
           <p data-hero-eyebrow className="eyebrow flex items-center gap-3">
             <span className="h-px w-10 bg-gold" /> Hello, I&apos;m
@@ -143,7 +155,28 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
         </div>
       </div>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-7 mx-auto flex max-w-[1440px] items-end justify-between px-5 font-mono text-[0.66rem] uppercase tracking-[0.25em] text-dim sm:px-8 lg:px-12 xl:pl-24">
+      {/* phones & tablets: static render of the keyboard + digital core, stacked under the text */}
+      <div aria-hidden className="relative mx-auto -mt-2 w-full max-w-[680px] lg:hidden">
+        <img
+          src="/fallback/hero-mobile.webp"
+          alt=""
+          width={720}
+          height={746}
+          fetchPriority="high"
+          decoding="async"
+          className="h-auto w-full"
+          style={{
+            maskImage:
+              "linear-gradient(180deg,transparent 0%,#000 16%,#000 84%,transparent 100%), linear-gradient(90deg,transparent 0%,#000 9%,#000 91%,transparent 100%)",
+            WebkitMaskImage:
+              "linear-gradient(180deg,transparent 0%,#000 16%,#000 84%,transparent 100%), linear-gradient(90deg,transparent 0%,#000 9%,#000 91%,transparent 100%)",
+            maskComposite: "intersect",
+            WebkitMaskComposite: "source-in",
+          }}
+        />
+      </div>
+
+      <div className="pointer-events-none absolute inset-x-0 bottom-7 mx-auto flex max-w-[1440px] items-end justify-between px-5 font-mono max-lg:hidden text-[0.66rem] uppercase tracking-[0.25em] text-dim sm:px-8 lg:px-12 xl:pl-24">
         <span data-hero-fade className="hidden sm:inline">
           5+ yrs · 20+ websites · 25+ SEO clients
         </span>

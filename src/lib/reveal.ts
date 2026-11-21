@@ -1,6 +1,6 @@
 "use client";
 import { useLayoutEffect, type RefObject } from "react";
-import { gsap, SplitText } from "./motion";
+import { useMotion } from "./use-motion";
 import { prefersReducedMotion } from "./env";
 
 /**
@@ -15,25 +15,35 @@ import { prefersReducedMotion } from "./env";
 type Reveal = { el: Element; play: () => void; done: boolean };
 
 export function useReveal(scopeRef: RefObject<HTMLElement | null>, enabled: boolean) {
+  const motion = useMotion();
   useLayoutEffect(() => {
     const scope = scopeRef.current;
-    if (!enabled || !scope || prefersReducedMotion()) return undefined;
-    const splits: SplitText[] = [];
+    if (!motion || !enabled || !scope || prefersReducedMotion()) return undefined;
+    const { gsap, SplitText } = motion;
+    const splits: InstanceType<typeof SplitText>[] = [];
     const reveals: Reveal[] = [];
+    const vh = window.innerHeight;
 
     const ctx = gsap.context(() => {
       const add = (el: Element, prepare: () => void, play: () => void) => {
+        // Already on screen when the library arrived: leave it visible (no flicker).
+        const b = el.getBoundingClientRect();
+        if (b.top < vh && b.bottom > 0) return;
         prepare();
         reveals.push({ el, play, done: false });
       };
 
       scope.querySelectorAll<HTMLElement>('[data-reveal="words"]').forEach((el) => {
-        const split = SplitText.create(el, { type: "words", mask: "words" });
-        splits.push(split);
+        let words: Element[] = [];
         add(
           el,
-          () => gsap.set(split.words, { yPercent: 110 }),
-          () => gsap.to(split.words, { yPercent: 0, duration: 1.05, ease: "expo.out", stagger: 0.06 }),
+          () => {
+            const split = SplitText.create(el, { type: "words", mask: "words" });
+            splits.push(split);
+            words = split.words;
+            gsap.set(words, { yPercent: 110 });
+          },
+          () => gsap.to(words, { yPercent: 0, duration: 1.05, ease: "expo.out", stagger: 0.06 }),
         );
       });
       scope.querySelectorAll<HTMLElement>('[data-reveal="mask"]').forEach((el) => {
@@ -102,5 +112,5 @@ export function useReveal(scopeRef: RefObject<HTMLElement | null>, enabled: bool
       ctx.revert();
       splits.forEach((s) => s.revert());
     };
-  }, [enabled, scopeRef]);
+  }, [enabled, scopeRef, motion]);
 }
