@@ -23,8 +23,14 @@ export const personal = {
     "I build fast websites and real software products — and make sure people find them. Development and SEO under one roof, so every launch is built to rank.",
 } as const;
 
-/** Inbox that receives contact-form messages (via FormSubmit). */
+/** Inbox that receives contact-form messages. */
 export const CONTACT_EMAIL = personal.email;
+/**
+ * Web3Forms access key (https://web3forms.com → enter your email → key arrives by email).
+ * This key is designed to be public. When set, the form sends through Web3Forms;
+ * when empty, it falls back to FormSubmit.
+ */
+export const WEB3FORMS_KEY = "";
 
 /* --------------------------- 2. SOCIAL LINKS ------------------------- */
 export const GITHUB_URL = "https://github.com/fahadkhan10151015-ui";

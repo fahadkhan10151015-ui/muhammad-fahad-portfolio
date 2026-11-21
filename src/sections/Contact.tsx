@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
-import { personal, GITHUB_URL, LINKEDIN_URL, whatsappLink, contactCopy, CONTACT_EMAIL, AUDIT_SUBJECT } from "@/data/portfolio";
+import { personal, GITHUB_URL, LINKEDIN_URL, whatsappLink, contactCopy, CONTACT_EMAIL, AUDIT_SUBJECT, WEB3FORMS_KEY } from "@/data/portfolio";
 import { useSceneView } from "@/lib/engine-context";
 import { useReveal } from "@/lib/reveal";
 import { PREFILL_EVENT, type PrefillDetail } from "@/lib/contact-events";
@@ -24,7 +24,7 @@ type Errors = Partial<Record<Field, string>>;
 const EMPTY: Values = { name: "", email: "", website: "", subject: "", message: "", honey: "" };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const URL_RE = /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/\S*)?$/i;
-/** FormSubmit forwards submissions to the inbox (no API key, no backend). */
+/** FormSubmit fallback endpoint (used when WEB3FORMS_KEY is empty). */
 const ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
 
 function validate(v: Values, mode: Mode): Errors {
@@ -109,22 +109,37 @@ export default function Contact({ ready }: { ready: boolean }) {
     setStatus("sending");
     const subject = mode === "audit" ? `${AUDIT_SUBJECT}: ${values.website.trim()}` : values.subject.trim();
     try {
-      const res = await fetch(ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({
-          _subject: `[Portfolio] ${subject}`,
-          _template: "table",
-          _captcha: "false",
-          _replyto: values.email.trim(),
-          Type: mode === "audit" ? "Free SEO audit" : "Project enquiry",
-          Name: values.name.trim(),
-          Email: values.email.trim(),
-          Website: values.website.trim() || "—",
-          Subject: subject,
-          Message: values.message.trim() || "—",
-        }),
-      });
+      const fields = {
+        Type: mode === "audit" ? "Free SEO audit" : "Project enquiry",
+        Name: values.name.trim(),
+        Email: values.email.trim(),
+        Website: values.website.trim() || "—",
+        Subject: subject,
+        Message: values.message.trim() || "—",
+      };
+      const res = WEB3FORMS_KEY
+        ? await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              access_key: WEB3FORMS_KEY,
+              subject: `[Portfolio] ${subject}`,
+              from_name: "Portfolio website",
+              replyto: values.email.trim(),
+              ...fields,
+            }),
+          })
+        : await fetch(ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            body: JSON.stringify({
+              _subject: `[Portfolio] ${subject}`,
+              _template: "table",
+              _captcha: "false",
+              _replyto: values.email.trim(),
+              ...fields,
+            }),
+          });
       const data = (await res.json().catch(() => ({}))) as { success?: string | boolean; message?: string };
       if (res.ok && String(data.success) === "true") {
         setStatus("sent");
