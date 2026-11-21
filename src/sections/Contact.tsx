@@ -125,11 +125,13 @@ export default function Contact({ ready }: { ready: boolean }) {
           Message: values.message.trim() || "—",
         }),
       });
-      const data = (await res.json().catch(() => ({}))) as { success?: string | boolean };
+      const data = (await res.json().catch(() => ({}))) as { success?: string | boolean; message?: string };
       if (res.ok && String(data.success) === "true") {
         setStatus("sent");
         setValues(EMPTY);
       } else {
+        // FormSubmit explains the problem here (e.g. form awaiting activation by the owner).
+        console.warn("[contact] FormSubmit:", res.status, data.message ?? data);
         setStatus("error");
       }
     } catch {
