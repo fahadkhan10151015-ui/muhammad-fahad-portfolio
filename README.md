@@ -1,8 +1,8 @@
 # Muhammad Fahad Khan — 3D Portfolio
 
-A cinematic, interactive 3D portfolio built with **React + Vite + Tailwind CSS v4**, **Three.js** (raw WebGL, one shared renderer), **GSAP** (ScrollTrigger + SplitText) and **Lenis** smooth scrolling.
+A cinematic, interactive 3D portfolio built with **Next.js 15 (App Router) + TypeScript (strict)**, **Tailwind CSS v4**, **Three.js** (one shared WebGL renderer) and **GSAP** (ScrollTrigger + SplitText). It is exported as a fully static site, so every page is pre-rendered HTML served from the CDN.
 
-Experience: real-progress **0 → 100 loader** → Hero (**interactive 3D keyboard + Digital Core**) → About (**Mechanical Orbital Code System**) → Skills (**3D Technology Network**, scroll-assembled) → Projects (**automatic 3D rotating exhibition** with filters) → Contact (**3D Communication Tower**).
+Experience: real-progress **0 → 100 loader** → Hero (**interactive 3D keyboard + Digital Core**) → About (**Mechanical Orbital Code System**) → Skills (**3D Technology Network**, scroll-assembled) → Projects (**automatic 3D rotating exhibition** with filters) → Contact (**3D Communication Tower**, message form + free SEO audit request).
 
 ## Prerequisites
 
@@ -13,58 +13,56 @@ Experience: real-progress **0 → 100 loader** → Hero (**interactive 3D keyboa
 
 ```bash
 npm install          # install dependencies
-npm run dev          # development server → http://localhost:5173
-npm run build        # production build → dist/
-npm run preview      # serve the production build locally
+npm run dev          # development server → http://localhost:3000
+npm run build        # production build → static site in out/
+npm run start        # serve the built out/ folder locally
+npm run typecheck    # TypeScript check
 ```
 
 ## Where to edit things
 
+All content lives in **`src/data/portfolio.ts`**.
+
 | What | Where |
 | --- | --- |
-| Name, title, tagline, email, phone, WhatsApp | `src/data/portfolio.js` → `personal` |
-| **GitHub URL** | `src/data/portfolio.js` → `GITHUB_URL` (also `index.html` JSON-LD `sameAs`) |
-| LinkedIn (hidden while empty) | `src/data/portfolio.js` → `LINKEDIN_URL` |
-| About text, statistics, experience, education | `src/data/portfolio.js` → `about`, `experience`, `education` |
-| Skills cards, 3D network labels, marquee | `src/data/portfolio.js` → `skillGroups`, `networkNodes`, `marquee` |
-| Projects, filters, live / GitHub links | `src/data/portfolio.js` → `projects`, `projectFilters` |
-| CV file | `public/Muhammad_Fahad_Khan_CV.pdf` |
-| Logo / favicon | `public/logo.svg`, `public/favicon.svg`, `public/apple-touch-icon.png` |
-| Social preview image | `public/og.png` |
-| Colours & fonts | `src/index.css` (`@theme`) and `src/three/common.js` (3D palette) |
-| Page title / SEO meta | `index.html` |
+| Name, title, tagline, email, phone, WhatsApp | `personal` |
+| **GitHub URL** | `GITHUB_URL` |
+| LinkedIn URL | `LINKEDIN_URL` |
+| Live site URL (SEO / Open Graph) | `SITE_URL` |
+| About text, statistics, services, current SEO clients | `about`, `services`, `currentSeo` |
+| Skills cards, 3D network labels, marquee | `skillGroups`, `networkNodes`, `marquee` |
+| Projects and filters | `projects`, `projectFilters` |
+| Contact text / inbox | `contactCopy`, `CONTACT_EMAIL` |
+| Logo / favicon / social image | `public/logo.svg`, `public/favicon.svg`, `public/apple-touch-icon.png`, `public/og.png` |
+| Colours & fonts | `src/app/globals.css` (`@theme`) and `src/three/common.ts` (3D palette) |
+| Page title / meta description | `src/app/layout.tsx` |
 
 ### Project links and images
 
-Each project has `url`, `github` and `image` fields. They are empty on purpose (no links were invented).
+Each project has `url`, `github` and `image` fields. Client websites are intentionally **not linked**.
 
-- Add a real link → `url: "https://…"` and the card shows an "open" arrow button.
-- Add a screenshot → put the file in `public/projects/` (e.g. `public/projects/perfume-point.webp`, ~800×500, WebP) and set `image: "/projects/perfume-point.webp"`. Without an image a styled preview is drawn in code.
+- Add a live link → `url: "https://…"`; the card then shows an "open" arrow button.
+- Add a screenshot → put the file in `public/projects/` (e.g. `public/projects/shelfo-pos.webp`, about 800×500, WebP) and set `image: "/projects/shelfo-pos.webp"`. Without an image, a styled preview is drawn in code.
 
-## Environment variables (contact form)
+## Contact form → your Gmail (FormSubmit)
 
-The contact form posts to the serverless function `api/contact.js`, which sends email through [Resend](https://resend.com).
+The form posts directly to [FormSubmit](https://formsubmit.co), which forwards every message to `CONTACT_EMAIL`. You don't need an API key, a backend or any environment variables (`.env.example` is only for reference).
 
-1. Copy `.env.example` → `.env` for local use with `vercel dev`, or add the variables in **Vercel → Project → Settings → Environment Variables**:
-   - `RESEND_API_KEY` — required to send email
-   - `CONTACT_TO_EMAIL` — inbox that receives messages (defaults to fahadkhan10151015@gmail.com)
-   - `CONTACT_FROM_EMAIL` — verified sender (defaults to `Portfolio <onboarding@resend.dev>`)
-2. Redeploy.
+**One-time activation:** after deploying, submit the form once yourself. FormSubmit sends an activation email to `CONTACT_EMAIL`; click **Activate Form**. From then on, every message and free-audit request arrives in your inbox (reply-to is set to the visitor's email).
 
-Without `RESEND_API_KEY` the form still works: it validates the input and opens the visitor's email app with the message pre-filled (plus a WhatsApp option). The API key is only used server-side and is never sent to the browser.
+If sending fails, the form offers "Email it instead" (mailto) and WhatsApp links.
 
 ## Deployment (Vercel)
 
-The project is connected to Vercel through GitHub — every push to `main` deploys automatically.
+The repo is connected to Vercel; every push to `main` deploys automatically. The Vercel project's framework preset must be **Next.js** (`vercel.json` sets it).
 
-For a fresh setup: push the folder to GitHub → vercel.com → **Add New → Project** → import the repo. Vercel detects Vite (build `npm run build`, output `dist`). `vercel.json` adds the SPA rewrite (excluding `/api`) and long-term caching for hashed assets.
-
-Other static hosts (Netlify, Cloudflare Pages) work too; the contact form will use the mail-app fallback unless you port `api/contact.js` to that host's functions.
+For a fresh setup, push the folder to GitHub, then go to vercel.com → **Add New → Project** and import the repo. Vercel detects Next.js; no settings or env vars are needed. Any static host also works: run `npm run build` and upload `out/`.
 
 ## Performance notes
 
-- One fixed WebGL canvas renders every section through scissor viewports — one GL context, off-screen scenes cost nothing, and scenes build lazily as they approach the viewport.
-- `three` (~150 KB gzip) is loaded with a dynamic import while the loader runs; the first paint ships only React, GSAP/Lenis and the page.
-- Pixel ratio is capped and adapts automatically if the frame rate drops; phones get fewer particles and no shadows.
-- Fonts are self-hosted (no third-party requests); only Latin subsets download.
-- `prefers-reduced-motion` disables smooth scrolling, scroll scrubbing, auto-rotation and heavy 3D motion.
+- One fixed WebGL canvas renders every section through scissor viewports. That means a single GL context, scenes that build lazily near the viewport, and zero cost for off-screen sections.
+- `three` loads via dynamic import while the loader runs, so first-load JS is about 175 KB.
+- There's no scroll-jacking (native scrolling), no backdrop blur over the canvas and no full-screen animated overlays, so scrolling stays smooth.
+- Pixel ratio is capped (1.5 desktop / 1.25 others) and lowers itself automatically when frames drop. Phones render 3D at 30 fps with fewer particles.
+- Fonts are self-hosted, and only the Latin subsets download.
+- `prefers-reduced-motion` disables auto-rotation, scroll scrubbing and heavy 3D motion.
