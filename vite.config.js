@@ -5,13 +5,17 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   build: {
+    target: "es2020",
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
-        // Libraries change rarely: keeping them in their own files lets browsers cache them
-        // across deployments and download them in parallel with the app code.
-        manualChunks: {
-          react: ["react", "react-dom", "react-router-dom"],
-          motion: ["framer-motion"],
+        // Long-term cacheable vendor chunks. `three` is only loaded through a
+        // dynamic import (src/three/engine.js), so it never blocks first paint.
+        manualChunks(id) {
+          if (id.includes("node_modules/three")) return "three";
+          if (id.includes("node_modules/gsap") || id.includes("node_modules/lenis")) return "motion";
+          if (id.includes("node_modules/react") || id.includes("node_modules/scheduler")) return "react";
+          return undefined;
         },
       },
     },

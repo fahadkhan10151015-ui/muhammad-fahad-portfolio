@@ -1,167 +1,143 @@
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowUpRight, ChevronDown, Download, MapPin } from "lucide-react";
-import Container from "../components/Container.jsx";
-import Button from "../components/Button.jsx";
-import Icon from "../components/Icon.jsx";
-import { coreSkills, personalInfo, projects, skillPath } from "../data/portfolio.js";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { personal, GITHUB_URL } from "../data/portfolio";
+import { useSceneView } from "../lib/engine";
+import { loading } from "../lib/loading";
+import { gsap, ScrollTrigger, SplitText, scrollToId } from "../lib/motion";
+import { prefersReducedMotion } from "../lib/env";
+import Magnetic from "../components/Magnetic";
+import Icon from "../components/Icon";
 
-const ease = [0.22, 1, 0.36, 1];
-const group = { hidden: {}, show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } } };
-const rise = {
-  hidden: { opacity: 0, y: 18, filter: "blur(6px)" },
-  show: { opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.75, ease } },
-};
-const word = { hidden: { opacity: 0, y: "0.5em" }, show: { opacity: 1, y: 0, transition: { duration: 0.8, ease } } };
-const chipGroup = { hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: 0.7 } } };
-const chip = { hidden: { opacity: 0, y: 6 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease } } };
+export default function Hero({ entering, ready, no3d }) {
+  const root = useRef(null);
+  const view = useRef(null);
+  const content = useRef(null);
+  const inst = useRef(null);
+  const enteringRef = useRef(entering);
+  enteringRef.current = entering;
 
-/** Right-hand card: core skills (each links to its page) + a short preview of selected projects. */
-function HeroPanel() {
-  const featured = projects.filter((p) => p.featured).slice(0, 3);
+  useSceneView(view, "hero", (i) => {
+    inst.current = i;
+    loading.done("scene");
+    if (!i) {
+      loading.forceComplete();
+      return;
+    }
+    // two rendered frames = shaders compiled & on screen
+    requestAnimationFrame(() => requestAnimationFrame(() => loading.done("frame")));
+    if (enteringRef.current) i.start();
+  });
+
+  useEffect(() => {
+    if (entering && inst.current) inst.current.start();
+  }, [entering]);
+
+  // Hero typography reveal, synced with the loader exit
+  useLayoutEffect(() => {
+    if (!entering || prefersReducedMotion()) return undefined;
+    let split;
+    const ctx = gsap.context(() => {
+      split = SplitText.create("[data-hero-name]", { type: "chars,lines", mask: "lines" });
+      const tl = gsap.timeline({ delay: 0.95 });
+      tl.from("[data-hero-eyebrow]", { autoAlpha: 0, x: -20, duration: 0.8, ease: "expo.out" })
+        .from(split.chars, { yPercent: 115, rotate: 6, duration: 1.1, ease: "expo.out", stagger: 0.025 }, "-=0.5")
+        .from("[data-hero-line]", { scaleX: 0, transformOrigin: "left", duration: 1, ease: "expo.inOut" }, "-=0.8")
+        .from("[data-hero-fade]", { autoAlpha: 0, y: 18, duration: 0.9, stagger: 0.08, ease: "expo.out" }, "-=0.7");
+    }, root);
+    return () => {
+      ctx.revert();
+      split && split.revert();
+    };
+  }, [entering]);
+
+  // scroll: content drifts up and fades as the keyboard recedes
+  useLayoutEffect(() => {
+    if (!ready || prefersReducedMotion()) return undefined;
+    const ctx = gsap.context(() => {
+      gsap.to(content.current, {
+        yPercent: -18,
+        autoAlpha: 0.1,
+        ease: "none",
+        scrollTrigger: { trigger: root.current, start: "top top", end: "bottom top", scrub: true },
+      });
+    }, root);
+    ScrollTrigger.refresh();
+    return () => ctx.revert();
+  }, [ready]);
 
   return (
-    <motion.aside
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5, duration: 0.8, ease }}
-      className="panel relative overflow-hidden rounded-3xl p-6 sm:p-8"
-      aria-label="Core skills and selected projects"
+    <section
+      id="home"
+      ref={root}
+      aria-label="Introduction"
+      className="relative flex h-[100svh] min-h-[640px] items-center overflow-hidden"
     >
-      <div
-        aria-hidden="true"
-        className="glow pointer-events-none absolute -right-[9rem] -top-[9rem] h-[22rem] w-[22rem] [--glow-color:rgb(255_255_255/0.06)]"
-      />
+      {/* 3D keyboard + digital core render into this area */}
+      <div ref={view} className="absolute inset-0" aria-hidden />
+      {no3d && (
+        <div aria-hidden className="absolute inset-0 bg-[radial-gradient(40%_45%_at_72%_42%,rgba(230,176,74,0.22),transparent_70%)]" />
+      )}
+      {/* legibility scrims */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,6,8,0.96)_0%,rgba(6,6,8,0.82)_34%,rgba(6,6,8,0.25)_58%,transparent_75%)] max-md:bg-gradient-to-b max-md:from-ink/30 max-md:via-ink/70 max-md:to-ink/30" />
+      <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink to-transparent" />
 
-      <div className="relative">
-        <h2 className="font-mono text-xs text-ash">// core skills</h2>
-        <motion.ul variants={chipGroup} initial="hidden" animate="show" className="mt-4 flex flex-wrap gap-2">
-          {coreSkills.map((s) => (
-            <motion.li key={s.slug} variants={chip}>
-              <Link
-                to={skillPath(s.slug)}
-                className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/10 bg-graphite/70 px-3.5 text-sm text-bone/90 transition-[border-color,background-color,transform] duration-200 hover:-translate-y-0.5 hover:border-white/25 hover:bg-steel"
-              >
-                <Icon name={s.icon} className="h-3.5 w-3.5 text-ash" />
-                {s.title}
-              </Link>
-            </motion.li>
-          ))}
-        </motion.ul>
-
-        {featured.length > 0 && (
-          <>
-            <div className="my-6 h-px bg-white/[0.08]" />
-            <h2 className="font-mono text-xs text-ash">// selected work</h2>
-            <ul className="mt-3 divide-y divide-white/[0.06]">
-              {featured.map((p) => (
-                <li key={p.title}>
-                  <a
-                    href="#projects"
-                    className="group flex min-h-12 items-center gap-3 py-2.5 text-bone transition-colors hover:text-white"
-                  >
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] bg-graphite text-bone/85 transition-colors group-hover:bg-steel">
-                      <Icon name={p.icon} className="h-4 w-4" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[0.95rem] font-medium">{p.title}</span>
-                      <span className="block text-xs text-ash">{p.category}</span>
-                    </span>
-                    <ArrowUpRight
-                      className="h-4 w-4 shrink-0 text-ash transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-bone"
-                      aria-hidden="true"
-                    />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </div>
-    </motion.aside>
-  );
-}
-
-export default function Hero() {
-  const nameWords = personalInfo.name.split(" ");
-
-  return (
-    <section id="home" aria-labelledby="home-title" className="relative flex min-h-[100svh] items-center pb-20 pt-28 sm:pt-32">
-      <Container>
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16">
-          <motion.div variants={group} initial="hidden" animate="show">
-            <motion.p variants={rise} className="font-mono text-sm text-ash">
-              <span className="text-signal">&gt;</span> Full-Stack · Mobile · SEO · Digital Marketing
-            </motion.p>
-
-            {personalInfo.status && (
-              <motion.p
-                variants={rise}
-                className="mt-4 inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-white/[0.04] py-1.5 pl-3 pr-4 text-sm text-bone"
-              >
-                <span className="relative flex h-2 w-2" aria-hidden="true">
-                  <span className="animate-status absolute inset-0 rounded-full bg-signal" />
-                  <span className="relative h-2 w-2 rounded-full bg-signal" />
-                </span>
-                {personalInfo.status}
-              </motion.p>
-            )}
-
-            <h1
-              id="home-title"
-              className="mt-5 text-[clamp(1.9rem,4.2vw,3rem)] font-bold leading-[1.05] tracking-[-0.035em] text-bone"
+      <div ref={content} className="relative mx-auto w-full max-w-[1440px] px-5 pt-[var(--nav-h)] sm:px-8 lg:px-12 xl:pl-24">
+        <div className="max-w-[720px]">
+          <p data-hero-eyebrow className="eyebrow flex items-center gap-3">
+            <span className="h-px w-10 bg-gold" /> Hello, I'm
+          </p>
+          <h1
+            data-hero-name
+            className="mt-5 font-display text-[clamp(2.7rem,7.4vw,6.1rem)] font-semibold uppercase leading-[0.92] tracking-[-0.035em]"
+          >
+            <span className="block text-bone">{personal.firstName}</span>
+            <span className="block text-gold-grad">{personal.lastName}</span>
+          </h1>
+          <div data-hero-line className="mt-7 h-px w-full max-w-[420px] bg-gradient-to-r from-gold/70 to-transparent" />
+          <p data-hero-fade className="mt-6 font-display text-lg font-medium text-bone sm:text-xl">
+            {personal.title}
+            <span className="mt-1 block font-body text-sm font-normal text-mute">
+              {personal.role} · PMAS Arid Agriculture University
+            </span>
+          </p>
+          <p data-hero-fade className="mt-5 max-w-[540px] text-[0.98rem] leading-relaxed text-mute sm:text-base">
+            {personal.tagline}
+          </p>
+          <div data-hero-fade className="mt-9 flex flex-wrap items-center gap-3">
+            <Magnetic>
+              <a href="#projects" onClick={(e) => (e.preventDefault(), scrollToId("projects"))} className="btn btn-gold">
+                View My Work <Icon name="ArrowRight" size={17} />
+              </a>
+            </Magnetic>
+            <Magnetic>
+              <a href="#contact" onClick={(e) => (e.preventDefault(), scrollToId("contact"))} className="btn btn-ghost">
+                Get In Touch
+              </a>
+            </Magnetic>
+            <a
+              href={GITHUB_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="link-underline ml-2 inline-flex items-center gap-2 text-sm font-medium text-bone/90 hover:text-gold-2"
             >
-              {nameWords.map((w, i) => (
-                <span key={w + i} className="inline-block overflow-hidden pb-[0.1em] align-bottom">
-                  <motion.span variants={word} className="inline-block">
-                    {w}
-                  </motion.span>
-                  {i < nameWords.length - 1 && <span>&nbsp;</span>}
-                </span>
-              ))}
-            </h1>
-
-            <motion.p variants={rise} className="mt-4 max-w-xl text-lg font-medium tracking-tight text-signal sm:text-xl">
-              {personalInfo.title}
-            </motion.p>
-
-            <motion.p variants={rise} className="mt-5 max-w-[58ch] text-base leading-relaxed text-ash text-pretty sm:text-[1.05rem]">
-              {personalInfo.summary}
-            </motion.p>
-
-            <motion.div variants={rise} className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Button href="#projects">View Projects</Button>
-              <Button href="#contact" variant="secondary">
-                Contact Me
-              </Button>
-              <Button href={personalInfo.cvUrl} download={personalInfo.cvDownloadName} variant="ghost" icon={Download}>
-                Download CV
-              </Button>
-            </motion.div>
-
-            {personalInfo.location && (
-              <motion.p variants={rise} className="mt-8 flex items-center gap-2 text-sm text-ash">
-                <MapPin className="h-4 w-4 text-bone/70" aria-hidden="true" />
-                {personalInfo.location}
-              </motion.p>
-            )}
-          </motion.div>
-
-          <div className="animate-float">
-            <HeroPanel />
+              <Icon name="Github" size={16} /> GitHub <Icon name="ArrowUpRight" size={15} />
+            </a>
           </div>
         </div>
-      </Container>
+      </div>
 
-      {/* Scroll indicator (only shown where there is room for it) */}
-      <a
-        href="#about"
-        aria-label="Scroll to About"
-        className="scroll-cue absolute bottom-6 left-1/2 -translate-x-1/2 flex-col items-center gap-1 text-xs text-ash transition-colors hover:text-bone"
-      >
-        <span className="font-mono">scroll</span>
-        <ChevronDown className="animate-bounce-soft h-4 w-4" aria-hidden="true" />
-      </a>
+      <div className="pointer-events-none absolute inset-x-0 bottom-7 mx-auto flex max-w-[1440px] items-end justify-between px-5 font-mono text-[0.66rem] uppercase tracking-[0.25em] text-dim sm:px-8 lg:px-12 xl:pl-24">
+        <span data-hero-fade className="flex items-center gap-2">
+          <Icon name="MapPin" size={13} /> {personal.location}
+        </span>
+        <span data-hero-fade className="hidden flex-col items-center gap-2 sm:flex">
+          <span className="relative h-9 w-[1px] overflow-hidden bg-white/10">
+            <span className="absolute inset-x-0 top-0 h-1/2 animate-[scrollcue_1.8s_ease-in-out_infinite] bg-gold" />
+          </span>
+          Scroll
+        </span>
+        <span data-hero-fade className="hidden lg:inline">Move over the keyboard</span>
+      </div>
+      <style>{`@keyframes scrollcue{0%{transform:translateY(-100%)}100%{transform:translateY(200%)}}`}</style>
     </section>
   );
 }
