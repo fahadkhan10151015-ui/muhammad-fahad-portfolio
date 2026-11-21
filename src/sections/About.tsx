@@ -14,20 +14,28 @@ function Stat({ value, suffix, label, icon, ready, className = "" }: StatData & 
   useEffect(() => {
     const el = num.current;
     if (!ready || !el || prefersReducedMotion()) return undefined;
-    const obj = { v: 0 };
     el.textContent = "0";
-    const tween = gsap.to(obj, {
-      v: value,
-      duration: 1.6,
-      ease: "power2.out",
-      onUpdate: () => {
-        el.textContent = String(Math.round(obj.v));
+    let tween: gsap.core.Tween | undefined;
+    const io = new IntersectionObserver(
+      ([en]) => {
+        if (!en?.isIntersecting) return;
+        io.disconnect();
+        const obj = { v: 0 };
+        tween = gsap.to(obj, {
+          v: value,
+          duration: 1.6,
+          ease: "power2.out",
+          onUpdate: () => {
+            el.textContent = String(Math.round(obj.v));
+          },
+        });
       },
-      scrollTrigger: { trigger: el, start: "top 92%", once: true },
-    });
+      { rootMargin: "0px 0px -8% 0px" },
+    );
+    io.observe(el);
     return () => {
-      tween.scrollTrigger?.kill();
-      tween.kill();
+      io.disconnect();
+      tween?.kill();
       el.textContent = String(value);
     };
   }, [ready, value]);
@@ -69,7 +77,7 @@ export default function About({ ready }: { ready: boolean }) {
     <section id="about" ref={root} aria-labelledby="about-title" className="relative py-24 sm:py-32 lg:py-40">
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:pl-24">
         <SectionMarker num="02" label="About" />
-        <div className="mt-10 grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-6">
+        <div className="mt-10 grid grid-cols-[minmax(0,1fr)] items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-6">
           <div>
             <p className="eyebrow">Get to know me</p>
             <h2 id="about-title" data-reveal="words" className="mt-4 font-display text-[clamp(2.6rem,6.5vw,5.2rem)] font-semibold leading-[0.95] tracking-[-0.03em]">
@@ -83,7 +91,7 @@ export default function About({ ready }: { ready: boolean }) {
                 </p>
               ))}
             </div>
-            <ul data-reveal="stagger" className="mt-9 grid gap-3 sm:grid-cols-2">
+            <ul data-reveal="stagger" className="mt-9 grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
               {quick.map((r) => (
                 <li key={r.k}>
                   <a

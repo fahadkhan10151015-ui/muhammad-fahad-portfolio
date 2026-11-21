@@ -211,7 +211,7 @@ export default function Contact({ ready }: { ready: boolean }) {
     <section id="contact" ref={root} aria-labelledby="contact-title" className="relative py-24 sm:py-32">
       <div className="mx-auto max-w-[1440px] px-5 sm:px-8 lg:px-12 xl:pl-24">
         <SectionMarker num="05" label="Contact" />
-        <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_0.95fr_1fr] xl:gap-6">
+        <div className="mt-10 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)_minmax(0,1fr)] xl:gap-6">
           <div>
             <p className="eyebrow">Let&apos;s get in touch</p>
             <h2 id="contact-title" data-reveal="words" className="mt-4 font-display text-[clamp(2.6rem,6vw,4.8rem)] font-semibold leading-[0.95] tracking-[-0.03em]">
@@ -220,7 +220,7 @@ export default function Contact({ ready }: { ready: boolean }) {
             <p data-reveal="mask" className="mt-6 max-w-[460px] leading-relaxed text-mute">
               {contactCopy}
             </p>
-            <div data-reveal="stagger" className="mt-9 grid gap-3">
+            <div data-reveal="stagger" className="mt-9 grid grid-cols-[minmax(0,1fr)] gap-3">
               <ContactCard icon="Phone" label="Phone" value={personal.phone.display} href={`tel:${personal.phone.tel}`} />
               <ContactCard icon="MessageCircle" label="WhatsApp" value="Message me on WhatsApp" href={whatsappLink} external />
               <ContactCard icon="Mail" label="Email" value={personal.email} href={`mailto:${personal.email}`} />
