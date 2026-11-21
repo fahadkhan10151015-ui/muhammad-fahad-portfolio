@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   trailingSlash: false,
   experimental: {
     optimizePackageImports: ["lucide-react", "three"],
+    // Inline the (small) stylesheet into the HTML: no render-blocking CSS request.
+    inlineCss: true,
   },
 };
 

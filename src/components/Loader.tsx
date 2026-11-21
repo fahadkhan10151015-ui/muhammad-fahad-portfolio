@@ -44,7 +44,7 @@ export default function Loader({ onExitStart, onDone }: { onExitStart?: () => vo
       const goal = target.current * 100;
       // ease toward the real value; speed limited so numbers never flicker
       const step = Math.max(goal - shown.current, 0) * (1 - Math.exp(-dt * 4));
-      shown.current = Math.min(goal, shown.current + Math.min(Math.max(step, dt * 18), dt * 95));
+      shown.current = Math.min(goal, shown.current + Math.min(Math.max(step, dt * 60), dt * 220));
       const v = Math.floor(shown.current + 0.0001);
       if (counter.current) counter.current.textContent = String(v).padStart(3, "0");
       if (bar.current) bar.current.style.transform = `scaleX(${shown.current / 100})`;
@@ -70,9 +70,9 @@ export default function Loader({ onExitStart, onDone }: { onExitStart?: () => vo
         tl.to(root.current, { autoAlpha: 0, duration: 0.4 });
         return;
       }
-      tl.to("[data-l-fade]", { autoAlpha: 0, y: -10, duration: 0.45, stagger: 0.03, ease: "power2.in" }, 0.15)
-        .to(counter.current, { yPercent: -100, autoAlpha: 0, duration: 0.6, ease: "expo.in" }, 0.15)
-        .to(bar.current, { scaleY: 40, autoAlpha: 0, duration: 0.6, ease: "expo.in" }, 0.2);
+      tl.to("[data-l-fade]", { autoAlpha: 0, y: -10, duration: 0.26, stagger: 0.03, ease: "power2.in" }, 0.05)
+        .to(counter.current, { yPercent: -100, autoAlpha: 0, duration: 0.34, ease: "expo.in" }, 0.05)
+        .to(bar.current, { scaleY: 40, autoAlpha: 0, duration: 0.34, ease: "expo.in" }, 0.07);
 
       if (navLogo && logo.current) {
         const from = logo.current.getBoundingClientRect();
@@ -83,16 +83,16 @@ export default function Loader({ onExitStart, onDone }: { onExitStart?: () => vo
             x: to.left + to.width / 2 - (from.left + from.width / 2),
             y: to.top + to.height / 2 - (from.top + from.height / 2),
             scale: to.width / from.width,
-            duration: 1.15,
+            duration: 0.64,
             ease: "expo.inOut",
           },
-          0.45,
+          0.16,
         );
       }
-      tl.to("[data-l-top]", { yPercent: -100, duration: 1.1, ease: "expo.inOut" }, 0.7)
-        .to("[data-l-bottom]", { yPercent: 100, duration: 1.1, ease: "expo.inOut" }, 0.7)
-        .to("[data-l-grid]", { autoAlpha: 0, duration: 0.5 }, 0.7)
-        .to(logo.current, { autoAlpha: 0, duration: 0.2 }, 1.55);
+      tl.to("[data-l-top]", { yPercent: -100, duration: 0.62, ease: "expo.inOut" }, 0.25)
+        .to("[data-l-bottom]", { yPercent: 100, duration: 0.62, ease: "expo.inOut" }, 0.25)
+        .to("[data-l-grid]", { autoAlpha: 0, duration: 0.28 }, 0.25)
+        .to(logo.current, { autoAlpha: 0, duration: 0.11 }, 0.56);
     }
 
     return () => {
@@ -143,7 +143,7 @@ export default function Loader({ onExitStart, onDone }: { onExitStart?: () => vo
         <div className="mt-8 overflow-hidden" data-l-fade>
           <div
             ref={counter}
-            className="font-display tabular text-[clamp(4.5rem,15vw,10rem)] font-semibold leading-none tracking-[-0.04em] text-bone"
+            className="font-display tabular text-[clamp(7rem,36vw,11rem)] font-semibold leading-none tracking-[-0.04em] text-bone"
           >
             000
           </div>

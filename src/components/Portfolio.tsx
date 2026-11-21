@@ -11,7 +11,7 @@ import Contact from "@/sections/Contact";
 import Footer from "@/sections/Footer";
 import { EngineContext } from "@/lib/engine-context";
 import { loading, startLoading } from "@/lib/loading";
-import { getQuality, prefersReducedMotion, supportsWebGL } from "@/lib/env";
+import { getQuality, prefersReducedMotion, hasHardwareWebGL } from "@/lib/env";
 import { ScrollTrigger } from "@/lib/motion";
 import { navLinks, type SectionId } from "@/data/portfolio";
 import type { Engine } from "@/three/types";
@@ -42,18 +42,29 @@ export default function Portfolio() {
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     startLoading();
-    if (!supportsWebGL() || !canvasRef.current) {
+    const canvas = canvasRef.current;
+    const fallback = () => {
       setNo3d(true);
-      loading.forceComplete();
+      document.documentElement.classList.add("no3d");
+      loading.done("engine");
+      loading.done("scene");
+      loading.done("frame");
+    };
+    if (!canvas || !hasHardwareWebGL()) {
+      fallback();
       return;
     }
-    loadEngine(canvasRef.current)
-      .then(setEngine)
-      .catch((err: unknown) => {
-        console.error("[3D] engine unavailable", err);
-        setNo3d(true);
-        loading.forceComplete();
-      });
+    // Start the 3D engine once the browser is idle, so first paint is never blocked.
+    const start = () =>
+      loadEngine(canvas)
+        .then(setEngine)
+        .catch((err: unknown) => {
+          console.error("[3D] engine unavailable", err);
+          fallback();
+        });
+    const ric = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+    if (ric) ric(start, { timeout: 400 });
+    else setTimeout(start, 60);
   }, []);
 
   useEffect(() => {

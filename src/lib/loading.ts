@@ -81,6 +81,8 @@ export function startLoading() {
       }),
     ),
   ).then(() => loading.done("fonts"));
+  // Fonts swap in when ready; never hold the loader more than 800 ms for them.
+  window.setTimeout(() => loading.done("fonts"), 800);
 
   const img = new Image();
   img.onload = img.onerror = () => loading.done("logo");

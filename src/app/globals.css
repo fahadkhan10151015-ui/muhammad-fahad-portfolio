@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Display font, self-hosted and preloaded (see layout.tsx) so headline text paints in its final font right away. */
+@font-face {
+  font-family: "Sora Variable";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url("/fonts/sora-latin.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* ------------------------------------------------------------------
  * THEME — black + gold. No cyan / violet / purple anywhere.
  * Change colours here; 3D colours live in src/three/palette.js.
@@ -13,7 +23,7 @@
   --color-line-2: rgb(255 255 255 / 0.14);
   --color-bone: #f4efe4;
   --color-mute: #a29c8f;
-  --color-dim: #6c675d;
+  --color-dim: #8a8478;
   --color-gold: #e6b04a;
   --color-gold-2: #f8d784;
   --color-gold-3: #a8741f;
@@ -238,6 +248,16 @@ body.is-loading {
 
 
 @layer components {
+/* static renders of the 3D scenes for devices without a GPU */
+.no3d [data-fallback] {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.no3d [data-fallback="about"] { background-image: url("/fallback/about.webp"); }
+.no3d [data-fallback="skills"] { background-image: url("/fallback/skills.webp"); }
+.no3d [data-fallback="contact"] { background-image: url("/fallback/contact.webp"); }
+
 /* ------------------------------ marquee --------------------------- */
 .marquee {
   overflow: hidden;

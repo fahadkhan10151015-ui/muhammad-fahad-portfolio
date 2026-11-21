@@ -112,7 +112,7 @@ export default function About({ ready }: { ready: boolean }) {
           </div>
 
           <div className="relative">
-            <div ref={view} className="h-[400px] w-full sm:h-[520px] lg:h-[640px]" aria-hidden />
+            <div ref={view} data-fallback="about" className="h-[400px] w-full sm:h-[520px] lg:h-[640px]" aria-hidden />
             <p className="pointer-events-none absolute bottom-4 right-2 font-mono text-[0.62rem] uppercase tracking-[0.25em] text-dim">
               Identity · Knowledge · Experience
             </p>

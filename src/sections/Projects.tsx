@@ -66,7 +66,7 @@ function ProjectCard({ p, index, total, offset, layout, onSelect }: CardProps) {
     prefillContact({ subject: p.category.includes("SEO") && !p.category.includes("WEB") ? `SEO enquiry (re: ${p.title})` : `Project enquiry (re: ${p.title})` });
   };
   return (
-    <article
+    <div
       data-card
       role="group"
       aria-roledescription="slide"
@@ -131,7 +131,7 @@ function ProjectCard({ p, index, total, offset, layout, onSelect }: CardProps) {
         className="pointer-events-none absolute inset-0 rounded-[22px] bg-ink transition-opacity duration-700"
         style={{ opacity: Math.min(0.6, Math.abs(offset) * 0.28) }}
       />
-    </article>
+    </div>
   );
 }
 

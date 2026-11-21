@@ -59,7 +59,8 @@ For a fresh setup, push the folder to GitHub, then go to vercel.com → **Add Ne
 ## Performance notes
 
 - One fixed WebGL canvas renders every section through scissor viewports. That means a single GL context, scenes that build lazily near the viewport, and zero cost for off-screen sections.
-- `three` loads via dynamic import while the loader runs, so first-load JS is about 175 KB.
+- `three` loads via dynamic import while the loader runs, and only on devices with a real GPU. Software renderers (headless test machines such as PageSpeed Insights, some low-end devices) and Data-Saver users get static renders of each scene from `public/fallback/`, so the page never freezes. Add `?3d` to the URL to force 3D for testing.
+- If you change a 3D scene, refresh its fallback image in `public/fallback/` (screenshot of the scene, WebP).
 - There's no scroll-jacking (native scrolling), no backdrop blur over the canvas and no full-screen animated overlays, so scrolling stays smooth.
 - Pixel ratio is capped (1.5 desktop / 1.25 others) and lowers itself automatically when frames drop. Phones render 3D at 30 fps with fewer particles.
 - Fonts are self-hosted, and only the Latin subsets download.

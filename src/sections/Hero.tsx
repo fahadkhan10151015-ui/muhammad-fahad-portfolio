@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { personal, GITHUB_URL, LINKEDIN_URL } from "@/data/portfolio";
 import { useSceneView } from "@/lib/engine-context";
 import { loading } from "@/lib/loading";
@@ -17,6 +17,7 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
   const inst = useRef<SceneInstance | null>(null);
   const enteringRef = useRef(entering);
   enteringRef.current = entering;
+  const [live3d, setLive3d] = useState(false);
 
   useSceneView(view, "hero", (i) => {
     inst.current = i;
@@ -26,7 +27,12 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
       return;
     }
     // two rendered frames = shaders compiled and on screen
-    requestAnimationFrame(() => requestAnimationFrame(() => loading.done("frame")));
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => {
+        loading.done("frame");
+        setLive3d(true);
+      }),
+    );
     if (enteringRef.current) i.start?.();
   });
 
@@ -41,11 +47,12 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
     const ctx = gsap.context(() => {
       split = SplitText.create("[data-hero-name]", { type: "chars,lines", mask: "lines" });
       gsap
-        .timeline({ delay: 0.95 })
-        .from("[data-hero-eyebrow]", { autoAlpha: 0, x: -20, duration: 0.8, ease: "expo.out" })
-        .from(split.chars, { yPercent: 115, duration: 1, ease: "expo.out", stagger: 0.022 }, "-=0.5")
+        .timeline({ delay: 0.55 })
+        .from("[data-hero-eyebrow]", { opacity: 0.01, x: -20, duration: 0.8, ease: "expo.out" })
+        .from(split.chars, { yPercent: 115, duration: 1, ease: "expo.out", stagger: 0.014 }, "-=0.5")
         .from("[data-hero-line]", { scaleX: 0, transformOrigin: "left", duration: 1, ease: "expo.inOut" }, "-=0.8")
-        .from("[data-hero-fade]", { autoAlpha: 0, y: 16, duration: 0.8, stagger: 0.07, ease: "expo.out" }, "-=0.7");
+        // opacity starts just above 0 so the text counts as painted immediately (fast LCP) while still fading in
+        .from("[data-hero-fade]", { opacity: 0.01, y: 16, duration: 0.8, stagger: 0.07, ease: "expo.out" }, "-=0.7");
     }, root);
     return () => {
       ctx.revert();
@@ -71,7 +78,11 @@ export default function Hero({ entering, ready, no3d }: { entering: boolean; rea
   return (
     <section id="home" ref={root} aria-label="Introduction" className="relative flex h-[100svh] min-h-[640px] items-center overflow-hidden">
       <div ref={view} className="absolute inset-0" aria-hidden />
-      {no3d && <div aria-hidden className="absolute inset-0 bg-[radial-gradient(40%_45%_at_72%_42%,rgba(230,176,74,0.22),transparent_70%)]" />}
+      {/* static render of the 3D scene: shown until WebGL is live, and permanently on devices without a GPU */}
+      <picture aria-hidden className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${live3d && !no3d ? "opacity-0" : "opacity-100"}`}>
+        <source media="(max-width: 767px)" srcSet="/fallback/hero-mobile.webp" />
+        <img src="/fallback/hero-desktop.webp" alt="" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-right" />
+      </picture>
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,6,8,0.96)_0%,rgba(6,6,8,0.82)_34%,rgba(6,6,8,0.25)_58%,transparent_75%)] max-md:bg-[linear-gradient(180deg,rgba(6,6,8,0.3)_0%,rgba(6,6,8,0.78)_35%,rgba(6,6,8,0.78)_70%,rgba(6,6,8,0.3)_100%)]"
