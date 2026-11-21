@@ -19,7 +19,15 @@ export function useSceneView(
   cb.current = onReady;
   useEffect(() => {
     if (!engine || !ref.current) return undefined;
-    return engine.addView(ref.current, key, (inst) => cb.current?.(inst));
+    const el = ref.current;
+    const remove = engine.addView(el, key, (inst) => {
+      if (inst) requestAnimationFrame(() => requestAnimationFrame(() => el.setAttribute("data-live", "")));
+      cb.current?.(inst);
+    });
+    return () => {
+      el.removeAttribute("data-live");
+      remove();
+    };
   }, [engine, key, ref]);
   return engine;
 }

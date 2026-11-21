@@ -11,7 +11,7 @@ import Contact from "@/sections/Contact";
 import Footer from "@/sections/Footer";
 import { EngineContext } from "@/lib/engine-context";
 import { loading, startLoading } from "@/lib/loading";
-import { getQuality, prefersReducedMotion, hasHardwareWebGL, isCompactViewport, forced3D } from "@/lib/env";
+import { getQuality, prefersReducedMotion, hasHardwareWebGL, isCompactViewport } from "@/lib/env";
 import { loadMotion } from "@/lib/use-motion";
 import { navLinks, type SectionId } from "@/data/portfolio";
 import type { Engine } from "@/three/types";
@@ -51,11 +51,28 @@ export default function Portfolio() {
       loading.done("scene");
       loading.done("frame");
     };
-    // Phones & tablets: content immediately (no loader), static 3D renders (no WebGL) — fast and smooth.
-    if (isCompactViewport() && !forced3D()) {
+    // Phones & tablets: content immediately (no loader) with static renders of the 3D scenes,
+    // then — once the page has loaded and the phone is idle — live 3D fades in on devices with a GPU.
+    if (isCompactViewport()) {
       setCompact(true);
-      fallback();
+      document.documentElement.classList.add("no3d");
       setPhase("ready");
+      if (!canvas || !hasHardwareWebGL()) {
+        setNo3d(true);
+        return;
+      }
+      const ric = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+      const startLater = () =>
+        window.setTimeout(() => {
+          const go = () =>
+            loadEngine(canvas)
+              .then(setEngine)
+              .catch(() => setNo3d(true));
+          if (ric) ric(go, { timeout: 1500 });
+          else go();
+        }, 1200);
+      if (document.readyState === "complete") startLater();
+      else window.addEventListener("load", startLater, { once: true });
       return;
     }
     if (!canvas || !hasHardwareWebGL()) {

@@ -348,13 +348,15 @@ export function buildHero({ quality, reduced }: SceneContext): SceneInstance {
   let parY = 0;
   let hoverAmt = 0;
 
+  let portraitFov = 32;
   function layout(aspect: number) {
     if (aspect < 0.8) {
-      // phones (portrait)
-      kbBase.set(0.2, -1.6, 2.8);
-      coreBase.set(1.6, 3.7, -1.5);
-      kbScale = 0.5;
-      camTarget.set(0, 1.6, 0);
+      // phones (portrait): keyboard across the bottom, core to the right of the buttons
+      kbBase.set(0, -2.6, 2.8);
+      coreBase.set(1.5, 1.2, 0.2);
+      kbScale = 0.44;
+      camTarget.set(0, 2.6, 0);
+      portraitFov = 54;
     } else if (aspect < 1.3) {
       // square-ish frames (also used to render the static mobile hero image)
       kbBase.set(0.9, -1.1, 1.9);
@@ -373,7 +375,14 @@ export function buildHero({ quality, reduced }: SceneContext): SceneInstance {
   function update({ t, dt, progress, pointer }: FrameState) {
     layout(camera.aspect);
     if (started && intro < 1) intro = Math.min(1, intro + dt / 2.2);
-    const exit = clamp01(progress) * (reduced ? 0.4 : 1);
+    // phones: the hero scrolls away naturally (no recede animation)
+    const portrait = camera.aspect < 0.8;
+    const exit = portrait ? 0 : clamp01(progress) * (reduced ? 0.4 : 1);
+    const fov = portrait ? portraitFov : 32;
+    if (camera.fov !== fov) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
 
     // camera: subtle parallax + recede on exit
     parX = damp(parX, pointer.inside ? pointer.x : 0, 2.5, dt);
@@ -385,7 +394,7 @@ export function buildHero({ quality, reduced }: SceneContext): SceneInstance {
     // keyboard pose
     kb.scale.setScalar(kbScale);
     kb.position.set(kbBase.x, kbBase.y - (1 - easeOutCubic(intro)) * 2 - exit * 1.5, kbBase.z - exit * 3);
-    kb.rotation.set(0.02, -0.16 + parX * 0.04, 0);
+    kb.rotation.set(0.02, (portrait ? 0 : -0.16) + parX * 0.04, 0);
     kb.updateMatrixWorld();
 
     // pointer → keyboard plane

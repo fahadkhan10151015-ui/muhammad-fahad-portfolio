@@ -84,20 +84,20 @@ export default function Hero({ entering, ready, no3d, compact }: { entering: boo
       id="home"
       ref={root}
       aria-label="Introduction"
-      className="relative flex flex-col overflow-hidden lg:h-[100svh] lg:min-h-[640px] lg:flex-row lg:items-center"
+      className="relative flex min-h-[100svh] flex-col justify-between overflow-hidden lg:h-[100svh] lg:min-h-[640px] lg:flex-row lg:items-center lg:justify-start"
     >
-      <div ref={view} className="absolute inset-0 max-lg:hidden" aria-hidden />
+      <div ref={view} className="absolute inset-0" aria-hidden />
       {/* static render of the 3D scene: shown until WebGL is live, and permanently on devices without a GPU */}
       <picture
         aria-hidden
-        className={`pointer-events-none absolute inset-0 transition-opacity duration-700 max-lg:hidden ${live3d && !no3d ? "opacity-0" : "opacity-100"}`}
+        className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${live3d && !no3d ? "opacity-0" : "opacity-100"}`}
       >
-        <source media="(max-width: 1023px)" srcSet="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
-        <img src="/fallback/hero-desktop.webp" alt="" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-right" />
+        <source media="(max-width: 1023px)" srcSet="/fallback/hero-mobile.webp" />
+        <img src="/fallback/hero-desktop.webp" alt="" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-right max-lg:object-bottom" />
       </picture>
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,6,8,0.96)_0%,rgba(6,6,8,0.82)_34%,rgba(6,6,8,0.25)_58%,transparent_75%)] max-lg:hidden"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,6,8,0.96)_0%,rgba(6,6,8,0.82)_34%,rgba(6,6,8,0.25)_58%,transparent_75%)] max-lg:bg-[linear-gradient(180deg,rgba(6,6,8,0.35)_0%,rgba(6,6,8,0.72)_30%,rgba(6,6,8,0.6)_58%,transparent_74%)]"
       />
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink to-transparent max-lg:hidden" />
 
@@ -155,26 +155,8 @@ export default function Hero({ entering, ready, no3d, compact }: { entering: boo
         </div>
       </div>
 
-      {/* phones & tablets: static render of the keyboard + digital core, stacked under the text */}
-      <div aria-hidden className="relative mx-auto -mt-2 w-full max-w-[680px] lg:hidden">
-        <img
-          src="/fallback/hero-mobile.webp"
-          alt=""
-          width={720}
-          height={746}
-          fetchPriority="high"
-          decoding="async"
-          className="h-auto w-full"
-          style={{
-            maskImage:
-              "linear-gradient(180deg,transparent 0%,#000 16%,#000 84%,transparent 100%), linear-gradient(90deg,transparent 0%,#000 9%,#000 91%,transparent 100%)",
-            WebkitMaskImage:
-              "linear-gradient(180deg,transparent 0%,#000 16%,#000 84%,transparent 100%), linear-gradient(90deg,transparent 0%,#000 9%,#000 91%,transparent 100%)",
-            maskComposite: "intersect",
-            WebkitMaskComposite: "source-in",
-          }}
-        />
-      </div>
+      {/* phones & tablets: room for the keyboard under the text */}
+      <div aria-hidden className="h-[46vw] min-h-[170px] max-h-[360px] lg:hidden" />
 
       <div className="pointer-events-none absolute inset-x-0 bottom-7 mx-auto flex max-w-[1440px] items-end justify-between px-5 font-mono max-lg:hidden text-[0.66rem] uppercase tracking-[0.25em] text-dim sm:px-8 lg:px-12 xl:pl-24">
         <span data-hero-fade className="hidden sm:inline">

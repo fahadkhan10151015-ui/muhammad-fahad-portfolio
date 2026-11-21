@@ -68,6 +68,13 @@ body {
   color: var(--color-ink);
 }
 
+/* no browser tap flash / mouse-click outlines (often blue or purple); keyboard focus stays visible in gold */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
 :focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 3px;
@@ -259,6 +266,7 @@ body {
 .no3d [data-fallback="about"] { background-image: url("/fallback/about.webp"); }
 .no3d [data-fallback="skills"] { background-image: url("/fallback/skills.webp"); }
 .no3d [data-fallback="contact"] { background-image: url("/fallback/contact.webp"); }
+.no3d [data-fallback][data-live] { background-image: none; }
 
 /* ------------------------------ marquee --------------------------- */
 .marquee {

@@ -24,7 +24,7 @@ function getLayout(w: number): Layout {
   if (w >= 1280) return { cardW: 390, R: 760, zK: 230, rot: 24, visible: 2 };
   if (w >= 1024) return { cardW: 360, R: 640, zK: 220, rot: 24, visible: 2 };
   if (w >= 640) return { cardW: 330, R: 470, zK: 200, rot: 22, visible: 1 };
-  return { cardW: Math.min(310, w * 0.8), R: Math.min(330, w * 0.86), zK: 220, rot: 20, visible: 1 };
+  return { cardW: Math.min(300, w * 0.76), R: Math.min(360, w * 0.95), zK: 300, rot: 30, visible: 1 };
 }
 
 /** Position on the curved exhibition path for signed offset `o`. */
@@ -129,7 +129,7 @@ function ProjectCard({ p, index, total, offset, layout, onSelect }: CardProps) {
         data-shade
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-[22px] bg-ink transition-opacity duration-700"
-        style={{ opacity: Math.min(0.6, Math.abs(offset) * 0.28) }}
+        style={{ opacity: Math.min(0.72, Math.abs(offset) * (layout.cardW < 320 ? 0.6 : 0.28)) }}
       />
     </div>
   );
@@ -322,13 +322,13 @@ export default function Projects({ ready }: { ready: boolean }) {
         onKeyDown={onKeyDown}
       >
         {/* platform */}
-        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-[-40px] h-[300px]">
-          <div className="platform-ring bottom-[40px] h-[230px] w-[min(1240px,140vw)] border border-white/[0.05]" />
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-[-40px] h-[300px] max-sm:bottom-[60px]">
+          <div className="platform-ring bottom-[40px] h-[230px] w-[min(1240px,140vw)] border border-white/[0.05] max-sm:hidden" />
           <div className="platform-ring bottom-[70px] h-[170px] w-[min(1020px,120vw)] border-[1.5px] border-gold/45 shadow-[0_0_40px_rgba(230,176,74,0.25),inset_0_0_40px_rgba(230,176,74,0.12)] max-lg:shadow-none" />
-          <div className="platform-ring bottom-[95px] h-[120px] w-[min(760px,96vw)] border border-gold/20" />
+          <div className="platform-ring bottom-[95px] h-[120px] w-[min(760px,96vw)] border border-gold/20 max-sm:hidden" />
           <div className="platform-ring bottom-[60px] h-[200px] w-[min(900px,110vw)] bg-[radial-gradient(closest-side,rgba(230,176,74,0.16),transparent)]" />
-          <div className="absolute bottom-[150px] left-[6%] h-[3px] w-24 rounded-full bg-gold/70 blur-[1px] shadow-[0_0_14px_rgba(230,176,74,0.9)]" />
-          <div className="absolute bottom-[150px] right-[6%] h-[3px] w-24 rounded-full bg-gold/70 blur-[1px] shadow-[0_0_14px_rgba(230,176,74,0.9)]" />
+          <div className="absolute bottom-[150px] left-[6%] h-[3px] w-24 rounded-full bg-gold/70 blur-[1px] shadow-[0_0_14px_rgba(230,176,74,0.9)] max-sm:hidden" />
+          <div className="absolute bottom-[150px] right-[6%] h-[3px] w-24 rounded-full bg-gold/70 blur-[1px] shadow-[0_0_14px_rgba(230,176,74,0.9)] max-sm:hidden" />
         </div>
 
         <div ref={stage} className="stage-3d relative mx-auto h-[500px] max-w-[1600px] sm:h-[540px]" style={{ transformStyle: "preserve-3d" }}>
