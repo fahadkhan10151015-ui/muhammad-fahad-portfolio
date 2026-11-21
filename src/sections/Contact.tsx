@@ -9,7 +9,7 @@ import Magnetic from "@/components/Magnetic";
 import Icon, { type IconName } from "@/components/Icon";
 
 type Mode = "project" | "audit";
-type Status = "idle" | "sending" | "sent" | "error";
+type Status = "idle" | "sending" | "sent" | "handoff" | "error";
 interface Values {
   name: string;
   email: string;
@@ -24,8 +24,6 @@ type Errors = Partial<Record<Field, string>>;
 const EMPTY: Values = { name: "", email: "", website: "", subject: "", message: "", honey: "" };
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const URL_RE = /^(https?:\/\/)?([\w-]+\.)+[a-z]{2,}(\/\S*)?$/i;
-/** FormSubmit fallback endpoint (used when WEB3FORMS_KEY is empty). */
-const ENDPOINT = `https://formsubmit.co/ajax/${CONTACT_EMAIL}`;
 
 function validate(v: Values, mode: Mode): Errors {
   const e: Errors = {};
@@ -87,11 +85,22 @@ export default function Contact({ ready }: { ready: boolean }) {
     if (k !== "honey" && errors[k]) setErrors((er) => ({ ...er, [k]: undefined }));
   };
 
-  const mailtoHref = () => {
-    const subject = mode === "audit" ? `${AUDIT_SUBJECT}: ${values.website}` : values.subject;
-    const body = `${values.message}\n\n${values.website ? `Website: ${values.website}\n` : ""}— ${values.name} (${values.email})`;
-    return `mailto:${personal.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-  };
+  const subjectLine = () => (mode === "audit" ? `${AUDIT_SUBJECT}: ${values.website.trim()}` : values.subject.trim());
+  const bodyText = () =>
+    [
+      mode === "audit" ? "Hi Fahad, I'd like a free SEO audit." : "Hi Fahad,",
+      "",
+      values.message.trim(),
+      "",
+      values.website.trim() ? `Website: ${values.website.trim()}` : "",
+      `Name: ${values.name.trim()}`,
+      `Email: ${values.email.trim()}`,
+    ]
+      .filter((l, i, arr) => !(l === "" && arr[i - 1] === ""))
+      .join("\n");
+  const mailtoHref = () =>
+    `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`[Portfolio] ${subjectLine()}`)}&body=${encodeURIComponent(bodyText())}`;
+  const whatsappHref = () => `${whatsappLink}?text=${encodeURIComponent(`${subjectLine()}\n\n${bodyText()}`)}`;
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -106,47 +115,35 @@ export default function Contact({ ready }: { ready: boolean }) {
       setStatus("sent");
       return;
     }
+    if (!WEB3FORMS_KEY) {
+      // No email service configured: open the visitor's email app with everything pre-filled.
+      window.location.href = mailtoHref();
+      setStatus("handoff");
+      return;
+    }
     setStatus("sending");
-    const subject = mode === "audit" ? `${AUDIT_SUBJECT}: ${values.website.trim()}` : values.subject.trim();
     try {
-      const fields = {
-        Type: mode === "audit" ? "Free SEO audit" : "Project enquiry",
-        Name: values.name.trim(),
-        Email: values.email.trim(),
-        Website: values.website.trim() || "—",
-        Subject: subject,
-        Message: values.message.trim() || "—",
-      };
-      const res = WEB3FORMS_KEY
-        ? await fetch("https://api.web3forms.com/submit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({
-              access_key: WEB3FORMS_KEY,
-              subject: `[Portfolio] ${subject}`,
-              from_name: "Portfolio website",
-              replyto: values.email.trim(),
-              ...fields,
-            }),
-          })
-        : await fetch(ENDPOINT, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
-            body: JSON.stringify({
-              _subject: `[Portfolio] ${subject}`,
-              _template: "table",
-              _captcha: "false",
-              _replyto: values.email.trim(),
-              ...fields,
-            }),
-          });
-      const data = (await res.json().catch(() => ({}))) as { success?: string | boolean; message?: string };
-      if (res.ok && String(data.success) === "true") {
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: `[Portfolio] ${subjectLine()}`,
+          from_name: "Portfolio website",
+          replyto: values.email.trim(),
+          Type: mode === "audit" ? "Free SEO audit" : "Project enquiry",
+          Name: values.name.trim(),
+          Email: values.email.trim(),
+          Website: values.website.trim() || "—",
+          Message: values.message.trim() || "—",
+        }),
+      });
+      const data = (await res.json().catch(() => ({}))) as { success?: boolean; message?: string };
+      if (res.ok && data.success) {
         setStatus("sent");
         setValues(EMPTY);
       } else {
-        // FormSubmit explains the problem here (e.g. form awaiting activation by the owner).
-        console.warn("[contact] FormSubmit:", res.status, data.message ?? data);
+        console.warn("[contact] Web3Forms:", res.status, data.message ?? data);
         setStatus("error");
       }
     } catch {
@@ -304,6 +301,20 @@ export default function Contact({ ready }: { ready: boolean }) {
                   </button>
                 </Magnetic>
                 <div aria-live="polite" className="min-h-[1.25rem] text-sm">
+                  {status === "handoff" && (
+                    <div className="rounded-xl border border-gold/35 bg-gold/[0.05] p-4 text-bone/90">
+                      <p className="font-semibold text-bone">Almost done — press “Send” in your email app.</p>
+                      <p className="mt-1 text-mute">Your message is ready to {CONTACT_EMAIL}. Email app didn&apos;t open?</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <a href={mailtoHref()} className="btn btn-ghost !h-10 !px-4 !text-xs">
+                          <Icon name="Mail" size={15} /> Open email again
+                        </a>
+                        <a href={whatsappHref()} target="_blank" rel="noreferrer" className="btn btn-gold !h-10 !px-4 !text-xs">
+                          <Icon name="MessageCircle" size={15} /> Send on WhatsApp
+                        </a>
+                      </div>
+                    </div>
+                  )}
                   {status === "error" && (
                     <p className="flex items-start gap-2 text-[#f08a6e]">
                       <Icon name="TriangleAlert" size={16} className="mt-0.5 shrink-0" />
@@ -313,7 +324,7 @@ export default function Contact({ ready }: { ready: boolean }) {
                           Email it instead
                         </a>{" "}
                         or{" "}
-                        <a href={whatsappLink} target="_blank" rel="noreferrer" className="underline underline-offset-4">
+                        <a href={whatsappHref()} target="_blank" rel="noreferrer" className="underline underline-offset-4">
                           WhatsApp me
                         </a>
                         .

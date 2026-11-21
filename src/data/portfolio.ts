@@ -27,10 +27,10 @@ export const personal = {
 export const CONTACT_EMAIL = personal.email;
 /**
  * Web3Forms access key (https://web3forms.com → enter your email → key arrives by email).
- * This key is designed to be public. When set, the form sends through Web3Forms;
- * when empty, it falls back to FormSubmit.
+ * This key is designed to be public. When set, messages arrive in the inbox directly;
+ * when empty, the form opens the visitor's email app (or WhatsApp) with the message pre-filled.
  */
-export const WEB3FORMS_KEY = "";
+export const WEB3FORMS_KEY = "401aeeeb-404a-4861-b18f-2a674dd92f0d";
 
 /* --------------------------- 2. SOCIAL LINKS ------------------------- */
 export const GITHUB_URL = "https://github.com/fahadkhan10151015-ui";

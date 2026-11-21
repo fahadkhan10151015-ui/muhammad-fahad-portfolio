@@ -44,13 +44,11 @@ Each project has `url`, `github` and `image` fields. Client websites are intenti
 - Add a live link → `url: "https://…"`; the card then shows an "open" arrow button.
 - Add a screenshot → put the file in `public/projects/` (e.g. `public/projects/shelfo-pos.webp`, about 800×500, WebP) and set `image: "/projects/shelfo-pos.webp"`. Without an image, a styled preview is drawn in code.
 
-## Contact form → your Gmail (FormSubmit)
+## Contact form → your Gmail (Web3Forms)
 
-The form posts directly to [FormSubmit](https://formsubmit.co), which forwards every message to `CONTACT_EMAIL`. You don't need an API key, a backend or any environment variables (`.env.example` is only for reference).
+The form sends through [Web3Forms](https://web3forms.com) using `WEB3FORMS_KEY` in `src/data/portfolio.ts` (a public access key tied to the inbox). Messages arrive directly in your email. If the key is removed, the form falls back to opening the visitor's email app / WhatsApp with the message pre-filled.
 
-**One-time activation:** after deploying, submit the form once yourself. FormSubmit sends an activation email to `CONTACT_EMAIL`; click **Activate Form**. From then on, every message and free-audit request arrives in your inbox (reply-to is set to the visitor's email).
-
-If sending fails, the form offers "Email it instead" (mailto) and WhatsApp links.
+To change the receiving inbox, create a new access key at web3forms.com with the new email and replace `WEB3FORMS_KEY`.
 
 ## Deployment (Vercel)
 
