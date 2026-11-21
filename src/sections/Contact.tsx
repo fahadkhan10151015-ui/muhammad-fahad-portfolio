@@ -131,11 +131,11 @@ export default function Contact({ ready }: { ready: boolean }) {
           subject: `[Portfolio] ${subjectLine()}`,
           from_name: "Portfolio website",
           replyto: values.email.trim(),
-          Type: mode === "audit" ? "Free SEO audit" : "Project enquiry",
-          Name: values.name.trim(),
-          Email: values.email.trim(),
-          Website: values.website.trim() || "—",
-          Message: values.message.trim() || "—",
+          "Request type": mode === "audit" ? "Free SEO audit" : "Project enquiry",
+          "Visitor name": values.name.trim(),
+          "Visitor email": values.email.trim(),
+          ...(values.website.trim() ? { "Website to audit": values.website.trim() } : {}),
+          message: bodyText(),
         }),
       });
       const data = (await res.json().catch(() => ({}))) as { success?: boolean; message?: string };
