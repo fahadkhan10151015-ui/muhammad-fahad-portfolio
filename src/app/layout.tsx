@@ -53,7 +53,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preload" as="font" href="/fonts/sora-latin.woff2" type="font/woff2" crossOrigin="anonymous" media="(min-width: 1024px)" />
         <link rel="preload" as="image" href="/logo.svg" type="image/svg+xml" />
-        <link rel="preload" as="image" href="/fallback/hero-mobile.webp" type="image/webp" media="(max-width: 1023px)" fetchPriority="high" />
         <link rel="preload" as="image" href="/fallback/hero-desktop.webp" type="image/webp" media="(min-width: 1024px)" fetchPriority="high" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>

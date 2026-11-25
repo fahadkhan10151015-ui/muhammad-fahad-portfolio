@@ -10,6 +10,7 @@ import { requestAudit } from "@/lib/contact-events";
 import type { SceneInstance } from "@/three/types";
 import Magnetic from "@/components/Magnetic";
 import Icon from "@/components/Icon";
+import { MobileHeroVisual } from "@/components/MobileScenes";
 
 export default function Hero({ entering, ready, no3d, compact }: { entering: boolean; ready: boolean; no3d: boolean; compact: boolean }) {
   const root = useRef<HTMLElement>(null);
@@ -92,16 +93,17 @@ export default function Hero({ entering, ready, no3d, compact }: { entering: boo
         aria-hidden
         className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${live3d && !no3d ? "opacity-0" : "opacity-100"}`}
       >
-        <source media="(max-width: 1023px)" srcSet="/fallback/hero-mobile.webp" />
-        <img src="/fallback/hero-desktop.webp" alt="" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-right max-lg:object-bottom" />
+        <source media="(max-width: 1023px)" srcSet="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" />
+        <img src="/fallback/hero-desktop.webp" alt="" fetchPriority="high" decoding="async" className="h-full w-full object-cover object-right" />
       </picture>
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,rgba(6,6,8,0.96)_0%,rgba(6,6,8,0.82)_34%,rgba(6,6,8,0.25)_58%,transparent_75%)] max-lg:bg-[linear-gradient(180deg,rgba(6,6,8,0.35)_0%,rgba(6,6,8,0.72)_30%,rgba(6,6,8,0.6)_58%,transparent_74%)]"
       />
       <div aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-ink to-transparent max-lg:hidden" />
+      <MobileHeroVisual />
 
-      <div ref={content} className="relative mx-auto w-full max-w-[1440px] px-5 pt-[calc(var(--nav-h)+2.5rem)] sm:px-8 lg:px-12 lg:pt-[var(--nav-h)] xl:pl-24">
+      <div ref={content} className="relative mx-auto w-full max-w-[1440px] px-5 pt-[calc(var(--nav-h)+1.5rem)] min-[400px]:pt-[calc(var(--nav-h)+2.5rem)] sm:px-8 lg:px-12 lg:pt-[var(--nav-h)] xl:pl-24">
         <div className="max-w-[720px]">
           <p data-hero-eyebrow className="eyebrow flex items-center gap-3">
             <span className="h-px w-10 bg-gold" /> Hello, I&apos;m
@@ -156,7 +158,7 @@ export default function Hero({ entering, ready, no3d, compact }: { entering: boo
       </div>
 
       {/* phones & tablets: room for the keyboard under the text */}
-      <div aria-hidden className="h-[46vw] min-h-[170px] max-h-[360px] lg:hidden" />
+      <div aria-hidden className="h-[42vw] min-h-[150px] max-h-[340px] lg:hidden" />
 
       <div className="pointer-events-none absolute inset-x-0 bottom-7 mx-auto flex max-w-[1440px] items-end justify-between px-5 font-mono max-lg:hidden text-[0.66rem] uppercase tracking-[0.25em] text-dim sm:px-8 lg:px-12 xl:pl-24">
         <span data-hero-fade className="hidden sm:inline">

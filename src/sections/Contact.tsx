@@ -7,6 +7,7 @@ import { PREFILL_EVENT, type PrefillDetail } from "@/lib/contact-events";
 import { SectionMarker } from "@/components/Chrome";
 import Magnetic from "@/components/Magnetic";
 import Icon, { type IconName } from "@/components/Icon";
+import { MobileContactVisual } from "@/components/MobileScenes";
 
 type Mode = "project" | "audit";
 type Status = "idle" | "sending" | "sent" | "handoff" | "error";
@@ -230,7 +231,9 @@ export default function Contact({ ready }: { ready: boolean }) {
           </div>
 
           <div className="relative order-last lg:col-span-2 xl:order-none xl:col-span-1">
-            <div ref={view} data-fallback="contact" className="h-[380px] w-full sm:h-[480px] xl:h-full xl:min-h-[640px]" aria-hidden />
+            <div ref={view} data-fallback="contact" className="h-[380px] w-full sm:h-[480px] xl:h-full xl:min-h-[640px]" aria-hidden>
+              <MobileContactVisual />
+            </div>
             <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center font-mono text-[0.62rem] uppercase tracking-[0.25em] text-dim">
               Signal · Connection · Collaboration
             </p>

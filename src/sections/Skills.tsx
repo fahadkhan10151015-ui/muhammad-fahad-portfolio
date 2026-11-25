@@ -7,6 +7,7 @@ import { useMotion } from "@/lib/use-motion";
 import { prefersReducedMotion } from "@/lib/env";
 import { SectionMarker } from "@/components/Chrome";
 import Icon from "@/components/Icon";
+import { MobileSkillsVisual } from "@/components/MobileScenes";
 
 export default function Skills({ ready }: { ready: boolean }) {
   const root = useRef<HTMLElement>(null);
@@ -87,7 +88,9 @@ export default function Skills({ ready }: { ready: boolean }) {
           </div>
 
           <div className="relative">
-            <div ref={view} data-fallback="skills" className="h-[440px] w-full sm:h-[540px] lg:h-[min(86vh,760px)]" aria-hidden />
+            <div ref={view} data-fallback="skills" className="h-[440px] w-full sm:h-[540px] lg:h-[min(86vh,760px)]" aria-hidden>
+              <MobileSkillsVisual />
+            </div>
             <div className="pointer-events-none absolute right-2 top-2 hidden text-right font-mono text-[0.62rem] uppercase tracking-[0.25em] text-dim lg:block">
               Network assembly
               <span ref={readout} className="tabular mt-1 block font-display text-2xl tracking-normal text-gold">

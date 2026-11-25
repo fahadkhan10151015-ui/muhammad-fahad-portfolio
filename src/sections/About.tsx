@@ -8,6 +8,7 @@ import { prefersReducedMotion } from "@/lib/env";
 import { requestAudit } from "@/lib/contact-events";
 import { SectionMarker } from "@/components/Chrome";
 import Icon, { type IconName } from "@/components/Icon";
+import { MobileAboutVisual } from "@/components/MobileScenes";
 
 function Stat({ value, suffix, label, icon, ready, motion, className = "" }: StatData & { ready: boolean; motion: Motion | null; className?: string }) {
   const num = useRef<HTMLSpanElement>(null);
@@ -117,7 +118,9 @@ export default function About({ ready }: { ready: boolean }) {
           </div>
 
           <div className="relative">
-            <div ref={view} data-fallback="about" className="h-[400px] w-full sm:h-[520px] lg:h-[640px]" aria-hidden />
+            <div ref={view} data-fallback="about" className="h-[400px] w-full sm:h-[520px] lg:h-[640px]" aria-hidden>
+              <MobileAboutVisual />
+            </div>
             <p className="pointer-events-none absolute bottom-4 right-2 font-mono text-[0.62rem] uppercase tracking-[0.25em] text-dim">
               Identity · Knowledge · Experience
             </p>

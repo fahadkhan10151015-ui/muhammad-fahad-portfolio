@@ -51,28 +51,13 @@ export default function Portfolio() {
       loading.done("scene");
       loading.done("frame");
     };
-    // Phones & tablets: content immediately (no loader) with static renders of the 3D scenes,
-    // then — once the page has loaded and the phone is idle — live 3D fades in on devices with a GPU.
+    // Phones & tablets: content immediately (no loader) and CSS-3D scenes instead of WebGL.
     if (isCompactViewport()) {
       setCompact(true);
       document.documentElement.classList.add("no3d");
       setPhase("ready");
-      if (!canvas || !hasHardwareWebGL()) {
-        setNo3d(true);
-        return;
-      }
-      const ric = (window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-      const startLater = () =>
-        window.setTimeout(() => {
-          const go = () =>
-            loadEngine(canvas)
-              .then(setEngine)
-              .catch(() => setNo3d(true));
-          if (ric) ric(go, { timeout: 1500 });
-          else go();
-        }, 1200);
-      if (document.readyState === "complete") startLater();
-      else window.addEventListener("load", startLater, { once: true });
+      // CSS-3D scenes (MobileScenes) replace WebGL here: sharp, smooth, light.
+      setNo3d(true);
       return;
     }
     if (!canvas || !hasHardwareWebGL()) {

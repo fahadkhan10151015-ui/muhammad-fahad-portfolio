@@ -62,7 +62,7 @@ For a fresh setup, push the folder to GitHub, then go to vercel.com → **Add Ne
 - `three` loads via dynamic import while the loader runs, and only on devices with a real GPU. Software renderers (headless test machines such as PageSpeed Insights, some low-end devices) and Data-Saver users get static renders of each scene from `public/fallback/`, so the page never freezes. Add `?3d` to the URL to force 3D for testing.
 - If you change a 3D scene, refresh its fallback image in `public/fallback/` (screenshot of the scene, WebP).
 - There's no scroll-jacking (native scrolling), no backdrop blur over the canvas and no full-screen animated overlays, so scrolling stays smooth.
-- **Phones & tablets (< 1024 px)** skip the loader: content and static renders of the 3D scenes paint immediately (fast LCP), then live 3D fades in once the page has loaded and the phone is idle (GPU devices only, 30 fps). Desktop keeps the 0→100 loader and interactive 3D.
+- **Phones & tablets (< 1024 px)** skip the loader and use CSS-3D versions of the scenes (`src/components/MobileScenes.tsx`): sharp at any resolution, animated only with transform/opacity (smooth 60 fps while scrolling) and paused off screen. No WebGL or `three` download on phones. Desktop keeps the 0→100 loader and WebGL scenes.
 - GSAP (+ ScrollTrigger / SplitText) is lazy-loaded after first paint (`src/lib/use-motion.ts`), so first-load JS is ~130 KB.
 - Pixel ratio is capped (1.5 desktop / 1.25 others) and lowers itself automatically when frames drop. Phones render 3D at 30 fps with fewer particles.
 - Fonts are self-hosted, and only the Latin subsets download.
