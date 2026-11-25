@@ -1,5 +1,5 @@
 "use client";
-import { personal, GITHUB_URL, LINKEDIN_URL, whatsappLink, navLinks } from "@/data/portfolio";
+import { personal, GITHUB_URL, LINKEDIN_URL, whatsappLink, navLinks, CONTACT_EMAIL } from "@/data/portfolio";
 import { scrollToId } from "@/lib/scroll";
 import { requestAudit } from "@/lib/contact-events";
 import Icon, { type IconName } from "@/components/Icon";
@@ -7,7 +7,7 @@ import Icon, { type IconName } from "@/components/Icon";
 const social: { label: string; href: string; icon: IconName; external?: boolean }[] = [
   { label: "LinkedIn", href: LINKEDIN_URL, icon: "Linkedin", external: true },
   { label: "GitHub", href: GITHUB_URL, icon: "Github", external: true },
-  { label: "Email", href: `mailto:${personal.email}`, icon: "Mail" },
+  { label: "Email", href: `mailto:${CONTACT_EMAIL}`, icon: "Mail" },
   { label: "WhatsApp", href: whatsappLink, icon: "MessageCircle", external: true },
 ];
 

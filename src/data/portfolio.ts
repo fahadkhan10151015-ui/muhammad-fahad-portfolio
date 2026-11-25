@@ -13,7 +13,10 @@ export const personal = {
   fullName: "Muhammad Fahad Khan",
   title: "Full-Stack Developer & SEO Specialist",
   focus: "Websites · Software · Search Growth",
-  email: "fahadkhan10151015@gmail.com",
+  /** Email shown on the website. */
+  email: "info@fahadkhan.com",
+  /** Real inbox: contact form and email links deliver here (never shown on the page). */
+  inbox: "fahadkhan10151015@gmail.com",
   phone: {
     display: "+92 335 0947538",
     tel: "+923350947538",
@@ -24,7 +27,7 @@ export const personal = {
 } as const;
 
 /** Inbox that receives contact-form messages. */
-export const CONTACT_EMAIL = personal.email;
+export const CONTACT_EMAIL = personal.inbox;
 /**
  * Web3Forms access key (https://web3forms.com → enter your email → key arrives by email).
  * This key is designed to be public. When set, messages arrive in the inbox directly;

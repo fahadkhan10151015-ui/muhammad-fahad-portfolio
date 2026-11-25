@@ -224,7 +224,7 @@ export default function Contact({ ready }: { ready: boolean }) {
             <div data-reveal="stagger" className="mt-9 grid grid-cols-[minmax(0,1fr)] gap-3">
               <ContactCard icon="Phone" label="Phone" value={personal.phone.display} href={`tel:${personal.phone.tel}`} />
               <ContactCard icon="MessageCircle" label="WhatsApp" value="Message me on WhatsApp" href={whatsappLink} external />
-              <ContactCard icon="Mail" label="Email" value={personal.email} href={`mailto:${personal.email}`} />
+              <ContactCard icon="Mail" label="Email" value={personal.email} href={`mailto:${CONTACT_EMAIL}`} />
               <ContactCard icon="Linkedin" label="LinkedIn" value="Connect on LinkedIn" href={LINKEDIN_URL} external />
               <ContactCard icon="Github" label="GitHub" value="View my GitHub profile" href={GITHUB_URL} external />
             </div>
@@ -328,7 +328,7 @@ export default function Contact({ ready }: { ready: boolean }) {
                   {status === "handoff" && (
                     <div className="rounded-xl border border-gold/35 bg-gold/[0.05] p-4 text-bone/90">
                       <p className="font-semibold text-bone">Almost done — press “Send” in your email app.</p>
-                      <p className="mt-1 text-mute">Your message is ready to {CONTACT_EMAIL}. Email app didn&apos;t open?</p>
+                      <p className="mt-1 text-mute">Your message is ready to send. Email app didn&apos;t open?</p>
                       <div className="mt-3 flex flex-wrap gap-2">
                         <a href={mailtoHref()} className="btn btn-ghost !h-10 !px-4 !text-xs">
                           <Icon name="Mail" size={15} /> Open email again

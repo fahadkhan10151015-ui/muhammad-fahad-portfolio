@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
-import { about, services, currentSeo, personal, LINKEDIN_URL, whatsappLink, type Stat as StatData } from "@/data/portfolio";
+import { about, services, currentSeo, personal, LINKEDIN_URL, whatsappLink, CONTACT_EMAIL, type Stat as StatData } from "@/data/portfolio";
 import { useSceneView } from "@/lib/engine-context";
 import { useReveal } from "@/lib/reveal";
 import { useMotion, type Motion } from "@/lib/use-motion";
@@ -63,7 +63,7 @@ function Stat({ value, suffix, label, icon, ready, motion, className = "" }: Sta
 }
 
 const quick: { icon: IconName; k: string; v: string; href: string; external?: boolean }[] = [
-  { icon: "Mail", k: "Email", v: personal.email, href: `mailto:${personal.email}` },
+  { icon: "Mail", k: "Email", v: personal.email, href: `mailto:${CONTACT_EMAIL}` },
   { icon: "MessageCircle", k: "WhatsApp", v: personal.phone.display, href: whatsappLink, external: true },
   { icon: "Linkedin", k: "LinkedIn", v: "muhammad-fahad-khan-dev", href: LINKEDIN_URL, external: true },
   { icon: "Briefcase", k: "Work with me", v: "Freelance · Remote", href: "#contact" },
